@@ -18,6 +18,19 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log('Making payment request to backend:', {
+      url: `${process.env.BACKEND_URL}/api/payments`,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader,
+      },
+      body: {
+        amount,
+        currency: currency.toLowerCase(),
+        gateway: gateway.toLowerCase(),
+      }
+    });
+
     const response = await fetch(`${process.env.BACKEND_URL}/api/payments`, {
       method: 'POST',
       headers: {
@@ -32,8 +45,13 @@ export async function POST(request: Request) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create payment');
+      const errorData = await response.json();
+      console.error('Backend payment error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      throw new Error(errorData.error || `Failed to create payment: ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -41,7 +59,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error in payment:', error);
     return NextResponse.json(
-      { error: 'خطا در ایجاد پرداخت' },
+      { error: error instanceof Error ? error.message : 'خطا در ایجاد پرداخت' },
       { status: 500 }
     );
   }

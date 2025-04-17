@@ -171,6 +171,10 @@ const PurchaseForm: React.FC = () => {
 
       const verifyData = await verifyResponse.json();
       
+      if (!verifyData.api_key) {
+        throw new Error('API key not received from verification');
+      }
+
       // Store the API key
       setApiKey(verifyData.api_key);
       setShowVerification(false);
@@ -181,6 +185,13 @@ const PurchaseForm: React.FC = () => {
         'crypto': 'nowpayments',
         'paypal': 'paypal'
       };
+
+      console.log('Making payment request with:', {
+        amount: finalAmount,
+        currency: formData.currency.toLowerCase(),
+        gateway: gatewayMap[formData.paymentMethod as keyof typeof gatewayMap],
+        apiKey: verifyData.api_key
+      });
 
       // Proceed with payment
       const paymentResponse = await fetch('/api/payment', {
@@ -198,6 +209,7 @@ const PurchaseForm: React.FC = () => {
 
       if (!paymentResponse.ok) {
         const error = await paymentResponse.json();
+        console.error('Payment error:', error);
         throw new Error(error.error || 'خطا در ایجاد پرداخت');
       }
 
@@ -216,7 +228,7 @@ const PurchaseForm: React.FC = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('خطا در پردازش پرداخت. لطفاً دوباره تلاش کنید.');
+      alert(error instanceof Error ? error.message : 'خطا در پردازش پرداخت. لطفاً دوباره تلاش کنید.');
       router.push('/failed');
     } finally {
       setIsLoading(false);
