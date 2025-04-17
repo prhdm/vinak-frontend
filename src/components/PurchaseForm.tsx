@@ -87,10 +87,17 @@ const PurchaseForm: React.FC = () => {
         setFinalAmountDisplay((420000 * 1.14).toLocaleString('fa-IR'));
       }
     } else if (currency === 'USD') {
-      setValue('paymentMethod', 'crypto');
-      setValue('amount', 12);
-      setAmountDisplay((12).toLocaleString('fa-IR'));
-      setFinalAmountDisplay((12 * 1.07).toLocaleString('fa-IR'));
+      if (versionType === 'physical') {
+        setValue('paymentMethod', 'crypto');
+        setValue('amount', 20);
+        setAmountDisplay((20).toLocaleString('fa-IR'));
+        setFinalAmountDisplay((20 * 1.07).toLocaleString('fa-IR'));
+      } else {
+        setValue('paymentMethod', 'crypto');
+        setValue('amount', 12);
+        setAmountDisplay((12).toLocaleString('fa-IR'));
+        setFinalAmountDisplay((12 * 1.07).toLocaleString('fa-IR'));
+      }
     }
   }, [currency, versionType, setValue]);
 
@@ -471,7 +478,11 @@ const PurchaseForm: React.FC = () => {
                   required: 'مقدار الزامی است',
                   validate: (value) => {
                     if (currency === 'USD') {
-                      return value >= 12 || 'حداقل مبلغ ۱۲ دلار است';
+                      if (versionType === 'physical') {
+                        return value >= 20 || 'حداقل مبلغ برای نسخه فیزیکی ۱۲ دلار است';
+                      } else {
+                        return value >= 12 || 'حداقل مبلغ ۱۲ دلار است';
+                      }
                     } else if (currency === 'IRR') {
                       if (versionType === 'physical') {
                         return value >= 1000000 || 'حداقل مبلغ برای نسخه فیزیکی ۱,۰۰۰,۰۰۰ تومان است';
