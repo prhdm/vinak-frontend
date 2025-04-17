@@ -7,27 +7,34 @@ interface Supporter {
   currency: 'USD' | 'IRR';
 }
 
-const supporters: Supporter[] = [
-  // { name: 'Brian Etemad', instagram: 'brianetemad', amount: 12, currency: 'USD' },
-  // { name: 'Alishmas', instagram: 'alishmasz', amount: 420000, currency: 'IRR' },
-  // { name: 'SLP', instagram: 'slpabbas', amount: 1000, currency: 'USD' },
-  // { name: 'Aria Khosravi', instagram: 'ariaa_khosravi', amount: 3000000, currency: 'IRR' },
-  // { name: 'Bashir', instagram: 'bashir.official', amount: 2000000, currency: 'IRR' },
-  // { name: 'Ehsan Mombeini', instagram: 'ehsanmobeiniii', amount: 50, currency: 'USD' },
-  // { name: 'Erfan Eslahi', instagram: 'erfitunes', amount: 530000, currency: 'IRR' },
-  // { name: 'Putak', instagram: 'braveputak', amount: 2500000, currency: 'IRR' },
-  // { name: 'Catchy Beatz', instagram: 'tiktaaksr', amount: 3000, currency: 'USD' },
-  // { name: 'Behzad Leito', instagram: 'behzadleito', amount: 80, currency: 'USD' },
-];
-
 export async function GET() {
   try {
-    const supportersUSD = supporters
-      .filter((s) => s.currency === 'USD')
-      .sort((a, b) => b.amount - a.amount);
-    const supportersIRR = supporters
-      .filter((s) => s.currency === 'IRR')
-      .sort((a, b) => b.amount - a.amount);
+    console.log('Calling backend at:', `${process.env.BACKEND_URL}/api/supporters/top`);
+    
+    // Make API call to your backend
+    const response = await fetch(`${process.env.BACKEND_URL}/api/supporters/top`, {
+      headers: {
+        'Content-Type': 'application/json',
+        // Add any authentication headers if needed
+        // 'Authorization': `Bearer ${process.env.BACKEND_API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Backend response not OK:', response.status, response.statusText);
+      throw new Error('Failed to fetch supporters from backend');
+    }
+
+    const data = await response.json();
+    console.log('Received data from backend:', data);
+
+    // Process the data from your backend
+    const supportersUSD = data
+      .filter((s: Supporter) => s.currency === 'USD')
+      .sort((a: Supporter, b: Supporter) => b.amount - a.amount);
+    const supportersIRR = data
+      .filter((s: Supporter) => s.currency === 'IRR')
+      .sort((a: Supporter, b: Supporter) => b.amount - a.amount);
 
     const topSupportersUSD = supportersUSD.slice(0, 5);
     const topSupportersIRR = supportersIRR.slice(0, 5);
