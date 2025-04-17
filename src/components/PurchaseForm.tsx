@@ -203,7 +203,7 @@ const PurchaseForm: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${verifyData.api_key}`,
+          'Authorization': `${verifyData.api_key}`,
         },
         body: JSON.stringify(paymentData),
       });
