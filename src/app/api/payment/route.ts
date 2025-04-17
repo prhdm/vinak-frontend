@@ -1,44 +1,39 @@
 import { NextResponse } from 'next/server';
 
-interface PaymentData {
-  name: string;
-  email: string;
-  instagram: string;
+interface PaymentRequest {
   amount: number;
-  currency: 'USD' | 'IRR';
-  paymentMethod: string;
-  code: string;
+  currency: string;
+  gateway: string;
 }
 
 export async function POST(request: Request) {
   try {
-    const data: PaymentData = await request.json();
-    const { email, code } = data;
+    const { amount, currency, gateway } = await request.json() as PaymentRequest;
 
-    // بررسی کد تایید
-    if (!global.verificationCodes?.[email] || global.verificationCodes[email] !== code) {
-      return NextResponse.json(
-        { error: 'کد تایید نامعتبر است' },
-        { status: 400 }
-      );
+    const response = await fetch(`${process.env.BACKEND_URL}/api/payments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': request.headers.get('Authorization') || '',
+      },
+      body: JSON.stringify({
+        amount,
+        currency: currency.toLowerCase(),
+        gateway: gateway.toLowerCase(),
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create payment');
     }
 
-    // در اینجا می‌توانید پرداخت را با درگاه پرداخت مورد نظر انجام دهید
-    // برای تست، یک کد سفارش تصادفی تولید می‌کنیم
-    const orderCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-    // حذف کد تایید پس از استفاده
-    delete global.verificationCodes[email];
-
-    return NextResponse.json({ 
-      success: true,
-      orderCode,
-      message: 'پرداخت با موفقیت انجام شد'
-    });
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Error in payment:', error);
     return NextResponse.json(
-      { error: 'خطا در پردازش پرداخت' },
+      { error: 'خطا در ایجاد پرداخت' },
       { status: 500 }
     );
   }

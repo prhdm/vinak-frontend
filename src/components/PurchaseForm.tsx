@@ -49,6 +49,7 @@ const PurchaseForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
   const {
     register,
@@ -169,6 +170,17 @@ const PurchaseForm: React.FC = () => {
       }
 
       const verifyData = await verifyResponse.json();
+      
+      // Store the API key
+      setApiKey(verifyData.api_key);
+      setShowVerification(false);
+
+      // Map payment method to gateway
+      const gatewayMap = {
+        'zarinpal': 'zarinpal',
+        'crypto': 'nowpayments',
+        'paypal': 'paypal'
+      };
 
       // Proceed with payment
       const paymentResponse = await fetch('/api/payment', {
@@ -178,17 +190,29 @@ const PurchaseForm: React.FC = () => {
           'Authorization': `Bearer ${verifyData.api_key}`,
         },
         body: JSON.stringify({
-          ...formData,
           amount: finalAmount,
+          currency: formData.currency.toLowerCase(),
+          gateway: gatewayMap[formData.paymentMethod as keyof typeof gatewayMap],
         }),
       });
 
-      const result = await paymentResponse.json();
+      if (!paymentResponse.ok) {
+        const error = await paymentResponse.json();
+        throw new Error(error.error || 'خطا در ایجاد پرداخت');
+      }
 
-      if (paymentResponse.ok) {
-        router.push(`/success?code=${result.orderCode}`);
-      } else {
-        router.push('/failed');
+      const result = await paymentResponse.json();
+      
+      // Handle payment response based on gateway
+      if (formData.paymentMethod === 'zarinpal') {
+        // Redirect to Zarinpal payment page
+        window.location.href = result.payment_url;
+      } else if (formData.paymentMethod === 'paypal') {
+        // Redirect to PayPal payment page
+        window.location.href = result.payment_url;
+      } else if (formData.paymentMethod === 'crypto') {
+        // Show crypto payment details
+        router.push(`/crypto-payment?orderId=${result.order_id}`);
       }
     } catch (error) {
       console.error('Error:', error);
