@@ -9,12 +9,20 @@ interface PaymentRequest {
 export async function POST(request: Request) {
   try {
     const { amount, currency, gateway } = await request.json() as PaymentRequest;
+    const authHeader = request.headers.get('Authorization');
+
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Authorization header is required' },
+        { status: 401 }
+      );
+    }
 
     const response = await fetch(`${process.env.BACKEND_URL}/api/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': request.headers.get('Authorization') || '',
+        'Authorization': authHeader,
       },
       body: JSON.stringify({
         amount,
