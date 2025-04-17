@@ -15,8 +15,6 @@ export async function GET() {
     const response = await fetch(`${process.env.BACKEND_URL}/api/top-users`, {
       headers: {
         'Content-Type': 'application/json',
-        // Add any authentication headers if needed
-        // 'Authorization': `Bearer ${process.env.BACKEND_API_KEY}`,
       },
     });
 
@@ -29,10 +27,11 @@ export async function GET() {
     console.log('Received data from backend:', data);
 
     // Process the data from your backend
-    const supportersUSD = data
+    const supporters = data.supporters || [];
+    const supportersUSD = supporters
       .filter((s: Supporter) => s.currency === 'USD')
       .sort((a: Supporter, b: Supporter) => b.amount - a.amount);
-    const supportersIRR = data
+    const supportersIRR = supporters
       .filter((s: Supporter) => s.currency === 'IRR')
       .sort((a: Supporter, b: Supporter) => b.amount - a.amount);
 
