@@ -170,6 +170,7 @@ const PurchaseForm: React.FC = () => {
       }
 
       const verifyData = await verifyResponse.json();
+      console.log('Verification response:', verifyData);
       
       if (!verifyData.api_key) {
         throw new Error('API key not received from verification');
@@ -186,10 +187,14 @@ const PurchaseForm: React.FC = () => {
         'paypal': 'paypal'
       };
 
-      console.log('Making payment request with:', {
+      const paymentData = {
         amount: finalAmount,
         currency: formData.currency.toLowerCase(),
         gateway: gatewayMap[formData.paymentMethod as keyof typeof gatewayMap],
+      };
+
+      console.log('Making payment request with:', {
+        ...paymentData,
         apiKey: verifyData.api_key
       });
 
@@ -200,11 +205,7 @@ const PurchaseForm: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${verifyData.api_key}`,
         },
-        body: JSON.stringify({
-          amount: finalAmount,
-          currency: formData.currency.toLowerCase(),
-          gateway: gatewayMap[formData.paymentMethod as keyof typeof gatewayMap],
-        }),
+        body: JSON.stringify(paymentData),
       });
 
       if (!paymentResponse.ok) {
@@ -214,6 +215,7 @@ const PurchaseForm: React.FC = () => {
       }
 
       const result = await paymentResponse.json();
+      console.log('Payment response:', result);
       
       // Handle payment response based on gateway
       if (formData.paymentMethod === 'zarinpal') {
