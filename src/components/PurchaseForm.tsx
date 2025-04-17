@@ -113,7 +113,8 @@ const PurchaseForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const verifyResponse = await fetch('/api/verify-email', {
+      // Send OTP
+      const otpResponse = await fetch('/api/send-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,8 +122,9 @@ const PurchaseForm: React.FC = () => {
         body: JSON.stringify({ email: data.email }),
       });
 
-      if (!verifyResponse.ok) {
-        throw new Error('خطا در تایید ایمیل');
+      if (!otpResponse.ok) {
+        const error = await otpResponse.json();
+        throw new Error(error.error || 'خطا در ارسال کد تایید');
       }
 
       setShowVerification(true);
@@ -142,20 +144,42 @@ const PurchaseForm: React.FC = () => {
       let finalAmount = formData.amount;
 
       if (formData.currency === 'IRR') {
-        finalAmount = Math.round(formData.amount * 1.14); 
+        finalAmount = Math.round(formData.amount * 1.14);
       } else if (formData.currency === 'USD') {
-        finalAmount = Math.round(formData.amount * 1.07); 
+        finalAmount = Math.round(formData.amount * 1.07);
       }
 
-      const paymentResponse = await fetch('/api/payment', {
+      // Verify OTP and create user
+      const verifyResponse = await fetch('/api/verify-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          email: formData.email,
+          otp: code,
+          instagram_id: formData.instagram,
+          name: formData.name,
+        }),
+      });
+
+      if (!verifyResponse.ok) {
+        const error = await verifyResponse.json();
+        throw new Error(error.error || 'خطا در تایید کد');
+      }
+
+      const verifyData = await verifyResponse.json();
+
+      // Proceed with payment
+      const paymentResponse = await fetch('/api/payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${verifyData.api_key}`,
+        },
+        body: JSON.stringify({
           ...formData,
           amount: finalAmount,
-          code,
         }),
       });
 
