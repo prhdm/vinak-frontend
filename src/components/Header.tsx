@@ -1,12 +1,21 @@
 import React from 'react';
 import Image from 'next/image';
-import { FaInstagram, FaYoutube, FaSpotify, FaSoundcloud } from 'react-icons/fa';
+import { FaInstagram, FaYoutube, FaSpotify, FaSoundcloud, FaTelegram, FaApple } from 'react-icons/fa';
+import { SiApplemusic } from "react-icons/si";
 
 const Header: React.FC = () => {
   return (
     <header className="mb-4 mt-4 w-full bg-transparent text-white font-iranyekan py-4 px-4 sm:px-8 lg:px-16 xl:px-32">
       <div className="w-full max-w-[1270px] mx-auto flex items-center justify-between">
         <div className="flex items-center gap-4 text-2xl">
+          <a
+            href="https://t.me/VinakOfficial1"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-300 transition"
+          >
+            <FaTelegram />
+          </a>
           <a
             href="https://instagram.com/vinakofficial"
             target="_blank"
@@ -38,6 +47,14 @@ const Header: React.FC = () => {
             className="hover:text-gray-300 transition"
           >
             <FaSoundcloud />
+          </a>
+          <a
+            href="https://music.apple.com/us/artist/vinak/1047024582"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gray-300 transition"
+          >
+            <SiApplemusic />
           </a>
         </div>
 
