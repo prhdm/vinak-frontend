@@ -429,12 +429,14 @@ const PurchaseForm: React.FC = () => {
                           message: 'کد پستی باید ۱۰ رقم باشد و با صفر شروع نشود',
                         },
                         validate: {
-                          checkFirstDigit: (value) => {
+                          checkFirstDigit: (value?: string) => {
+                            if (!value) return 'کد پستی الزامی است';
                             const firstDigit = parseInt(value[0]);
                             return (firstDigit >= 1 && firstDigit <= 9) || 'رقم اول کد پستی باید بین ۱ تا ۹ باشد';
                           },
-                          checkProvince: (value) => {
+                          checkProvince: (value?: string) => {
                             if (!watch('province')) return true;
+                            if (!value) return 'کد پستی الزامی است';
                             const provinceCode = parseInt(value.substring(1, 3));
                             const validProvinceCodes = {
                               'آذربایجان شرقی': [51, 52, 53],
@@ -844,12 +846,14 @@ const PurchaseForm: React.FC = () => {
                           message: 'کد پستی باید ۱۰ رقم باشد و با صفر شروع نشود',
                         },
                         validate: {
-                          checkFirstDigit: (value) => {
+                          checkFirstDigit: (value?: string) => {
+                            if (!value) return 'کد پستی الزامی است';
                             const firstDigit = parseInt(value[0]);
                             return (firstDigit >= 1 && firstDigit <= 9) || 'رقم اول کد پستی باید بین ۱ تا ۹ باشد';
                           },
-                          checkProvince: (value) => {
+                          checkProvince: (value?: string) => {
                             if (!watch('province')) return true;
+                            if (!value) return 'کد پستی الزامی است';
                             const provinceCode = parseInt(value.substring(1, 3));
                             const validProvinceCodes = {
                               'آذربایجان شرقی': [51, 52, 53],
