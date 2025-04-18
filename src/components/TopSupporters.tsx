@@ -12,7 +12,7 @@ interface TopSupportersProps {
   title?: string;
 }
 
-const TopSupporters: React.FC<TopSupportersProps> = ({ supporters, title }) => {
+const TopSupporters: React.FC<TopSupportersProps> = ({ supporters = [], title }) => {
   const sortedSupporters = supporters.slice().sort((a, b) => b.amount - a.amount);
 
   return (
