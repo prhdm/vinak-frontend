@@ -2,10 +2,10 @@ import withPWA from 'next-pwa';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
+const nextConfig: NextConfig & { allowedDevOrigins: string[] } = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'vinak.net', 'mail.vinak.net'],
+    domains: ['localhost', 'vinak.net'],
     formats: ['image/avif', 'image/webp'] as const,
   },
   experimental: {
@@ -58,8 +58,6 @@ const nextConfig: NextConfig = {
     'http://localhost:3000',
     'https://vinak.net',
     'http://vinak.net',
-    'https://mail.vinak.net',
-    'http://mail.vinak.net',
     process.env.BACKEND_URL || 'http://localhost:8080'
   ],
   async rewrites() {
