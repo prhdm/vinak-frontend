@@ -2,7 +2,7 @@ import withPWA from 'next-pwa';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import { NextConfig } from 'next';
 
-const nextConfig: NextConfig & { allowedDevOrigins: string[] } = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['localhost', 'vinak.net'],
@@ -34,7 +34,7 @@ const nextConfig: NextConfig & { allowedDevOrigins: string[] } = {
           },
           {
             key: 'Access-Control-Allow-Origin',
-            value: '*',
+            value: 'https://vinak.net',
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -54,12 +54,6 @@ const nextConfig: NextConfig & { allowedDevOrigins: string[] } = {
   distDir: '.next',
   trailingSlash: false,
   poweredByHeader: false,
-  allowedDevOrigins: [
-    'http://localhost:3000',
-    'https://vinak.net',
-    'http://vinak.net',
-    process.env.BACKEND_URL || 'http://localhost:8080'
-  ],
   async rewrites() {
     return [
       {
