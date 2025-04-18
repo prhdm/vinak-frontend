@@ -9,10 +9,10 @@ interface Supporter {
 
 export async function GET() {
   try {
-    console.log('Calling backend at:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/top-users`);
-    
-    // Make API call to your backend
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/top-users`, {
+    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/top-users`;
+    console.log('Calling backend at:', url);
+
+    const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -26,21 +26,22 @@ export async function GET() {
     const data = await response.json();
     console.log('Received data from backend:', data);
 
-    // Process the data from your backend
-    const supporters = data.supporters || [];
-    const supportersUSD = supporters
-      .filter((s: Supporter) => s.currency === 'USD')
-      .sort((a: Supporter, b: Supporter) => b.amount - a.amount);
-    const supportersIRR = supporters
-      .filter((s: Supporter) => s.currency === 'IRR')
-      .sort((a: Supporter, b: Supporter) => b.amount - a.amount);
+    const rawSupporters = data?.supporters;
+    const supporters: Supporter[] = Array.isArray(rawSupporters) ? rawSupporters : [];
 
-    const topSupportersUSD = supportersUSD.slice(0, 5);
-    const topSupportersIRR = supportersIRR.slice(0, 5);
+    const supportersUSD = supporters
+      .filter((s) => s.currency === 'USD')
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5);
+
+    const supportersIRR = supporters
+      .filter((s) => s.currency === 'IRR')
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5);
 
     return NextResponse.json({
-      usd: topSupportersUSD,
-      irr: topSupportersIRR
+      usd: supportersUSD,
+      irr: supportersIRR,
     });
   } catch (error) {
     console.error('Error in top-users:', error);
@@ -49,4 +50,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-} 
+}
