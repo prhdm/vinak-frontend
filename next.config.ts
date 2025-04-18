@@ -5,7 +5,7 @@ import { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'vinak.net', 'mail.vinak.net'],
     formats: ['image/avif', 'image/webp'] as const,
   },
   experimental: {
@@ -28,6 +28,22 @@ const nextConfig: NextConfig = {
             key: 'X-Forwarded-Host',
             value: process.env.NEXT_PUBLIC_HOST || 'localhost',
           },
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET,DELETE,PATCH,POST,PUT',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization',
+          },
         ],
       },
     ];
@@ -38,6 +54,14 @@ const nextConfig: NextConfig = {
   distDir: '.next',
   trailingSlash: false,
   poweredByHeader: false,
+  allowedDevOrigins: [
+    'http://localhost:3000',
+    'https://vinak.net',
+    'http://vinak.net',
+    'https://mail.vinak.net',
+    'http://mail.vinak.net',
+    process.env.BACKEND_URL || 'http://localhost:8080'
+  ],
   async rewrites() {
     return [
       {
