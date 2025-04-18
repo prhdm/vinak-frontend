@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     console.log('Making payment request to backend:', {
-      url: `${process.env.BACKEND_URL}/api/payments`,
+      url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payments`,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authHeader,
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       }
     });
 
-    const response = await fetch(`${process.env.BACKEND_URL}/api/payments`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

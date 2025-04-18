@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   try {
     const { email, otp, instagram_id, name } = await request.json() as VerifyOTPRequest;
 
-    const response = await fetch(`${process.env.BACKEND_URL}/api/verify-otp`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/verify-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

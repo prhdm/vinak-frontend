@@ -9,10 +9,10 @@ interface Supporter {
 
 export async function GET() {
   try {
-    console.log('Calling backend at:', `${process.env.BACKEND_URL}/api/top-users`);
+    console.log('Calling backend at:', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/top-users`);
     
     // Make API call to your backend
-    const response = await fetch(`${process.env.BACKEND_URL}/api/top-users`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/top-users`, {
       headers: {
         'Content-Type': 'application/json',
       },
