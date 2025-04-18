@@ -231,7 +231,7 @@ const PurchaseForm: React.FC = () => {
     } catch (error) {
       console.error('Error:', error);
       alert(error instanceof Error ? error.message : 'خطا در پردازش پرداخت. لطفاً دوباره تلاش کنید.');
-      router.push('/failed');
+      router.push('/cancel');
     } finally {
       setIsLoading(false);
     }
