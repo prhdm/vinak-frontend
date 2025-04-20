@@ -110,7 +110,15 @@ export async function POST(request: Request) {
           email: body.email,
           amount: body.amount,
           currency: 'irr',
-          authority_id: authorityId
+          authority_id: authorityId,
+          purchase_type: body.purchase_type,
+          persian_name: body.persian_name,
+          phone: body.phone,
+          province: body.province,
+          city: body.city,
+          address: body.address,
+          postal_code: body.postal_code,
+          plate: body.plate
         }),
       });
 

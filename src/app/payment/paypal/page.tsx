@@ -10,6 +10,13 @@ export default function PayPalPayment() {
   const name = searchParams.get('name');
   const email = searchParams.get('email');
   const instagram = searchParams.get('instagram');
+  const purchaseType = searchParams.get('purchaseType');
+  const persianName = searchParams.get('persianName');
+  const phone = searchParams.get('phone');
+  const province = searchParams.get('province');
+  const city = searchParams.get('city');
+  const address = searchParams.get('address');
+  const postalCode = searchParams.get('postalCode');
 
   useEffect(() => {
     const redirectToPayPal = async () => {
@@ -43,7 +50,14 @@ export default function PayPalPayment() {
           currency: 'usd',
           name,
           email,
-          instagram
+          instagram,
+          purchase_type: purchaseType,
+          persian_name: persianName,
+          phone,
+          province,
+          city,
+          address,
+          postal_code: postalCode
         };
 
         console.log('Sending request to PayPal with:', requestBody);

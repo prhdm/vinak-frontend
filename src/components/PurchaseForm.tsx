@@ -157,10 +157,13 @@ const PurchaseForm: React.FC = () => {
 
       if (formData.currency === 'IRR') {
         // Redirect to Zarinpal payment page
-        window.location.href = `/payment/zarinpal?amount=${finalAmount}&orderCode=${orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}`;
-      } else {
+        window.location.href = `/payment/zarinpal?amount=${finalAmount}&orderCode=${orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}&purchase_type=${selectedVersion}&persian_name=${encodeURIComponent(formData.persianName || '')}&phone=${encodeURIComponent(formData.phone || '')}&province=${encodeURIComponent(formData.province || '')}&city=${encodeURIComponent(formData.city || '')}&address=${encodeURIComponent(formData.address || '')}&postal_code=${encodeURIComponent(formData.postalCode || '')}&plate=${encodeURIComponent(formData.plate || '')}`;
+      } else if (formData.paymentMethod === 'crypto') {
         // Redirect to NOWPayments page
-        window.location.href = `/payment/crypto?amount=${finalAmount}&orderCode=${orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}`;
+        window.location.href = `/payment/crypto?amount=${finalAmount}&orderCode=${orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}&purchase_type=${selectedVersion}&persian_name=${encodeURIComponent(formData.persianName || '')}&phone=${encodeURIComponent(formData.phone || '')}&province=${encodeURIComponent(formData.province || '')}&city=${encodeURIComponent(formData.city || '')}&address=${encodeURIComponent(formData.address || '')}&postal_code=${encodeURIComponent(formData.postalCode || '')}&plate=${encodeURIComponent(formData.plate || '')}`;
+      } else if (formData.paymentMethod === 'paypal') {
+        // Redirect to PayPal payment page
+        window.location.href = `/payment/paypal?amount=${finalAmount}&orderCode=${orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}&purchase_type=${selectedVersion}&persian_name=${encodeURIComponent(formData.persianName || '')}&phone=${encodeURIComponent(formData.phone || '')}&province=${encodeURIComponent(formData.province || '')}&city=${encodeURIComponent(formData.city || '')}&address=${encodeURIComponent(formData.address || '')}&postal_code=${encodeURIComponent(formData.postalCode || '')}&plate=${encodeURIComponent(formData.plate || '')}`;
       }
     } catch (error) {
       console.error('Error:', error);
@@ -195,9 +198,11 @@ const PurchaseForm: React.FC = () => {
 
       if (paymentResponse.ok) {
         if (formData.paymentMethod === 'zarinpal') {
-          window.location.href = `/payment/zarinpal?amount=${finalAmount}&orderCode=${result.orderCode}`;
+          window.location.href = `/payment/zarinpal?amount=${finalAmount}&orderCode=${result.orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}&purchase_type=${selectedVersion}&persian_name=${encodeURIComponent(formData.persianName || '')}&phone=${encodeURIComponent(formData.phone || '')}&province=${encodeURIComponent(formData.province || '')}&city=${encodeURIComponent(formData.city || '')}&address=${encodeURIComponent(formData.address || '')}&postal_code=${encodeURIComponent(formData.postalCode || '')}&plate=${encodeURIComponent(formData.plate || '')}`;
         } else if (formData.paymentMethod === 'crypto') {
-          window.location.href = `/payment/crypto?amount=${finalAmount}&orderCode=${result.orderCode}`;
+          window.location.href = `/payment/crypto?amount=${finalAmount}&orderCode=${result.orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}&purchase_type=${selectedVersion}&persian_name=${encodeURIComponent(formData.persianName || '')}&phone=${encodeURIComponent(formData.phone || '')}&province=${encodeURIComponent(formData.province || '')}&city=${encodeURIComponent(formData.city || '')}&address=${encodeURIComponent(formData.address || '')}&postal_code=${encodeURIComponent(formData.postalCode || '')}&plate=${encodeURIComponent(formData.plate || '')}`;
+        } else if (formData.paymentMethod === 'paypal') {
+          window.location.href = `/payment/paypal?amount=${finalAmount}&orderCode=${result.orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}&purchase_type=${selectedVersion}&persian_name=${encodeURIComponent(formData.persianName || '')}&phone=${encodeURIComponent(formData.phone || '')}&province=${encodeURIComponent(formData.province || '')}&city=${encodeURIComponent(formData.city || '')}&address=${encodeURIComponent(formData.address || '')}&postal_code=${encodeURIComponent(formData.postalCode || '')}&plate=${encodeURIComponent(formData.plate || '')}`;
         }
         return true;
       } else {

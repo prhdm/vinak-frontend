@@ -8,6 +8,14 @@ interface NowPaymentsRequestBody {
   email: string;
   name: string;
   instagram: string;
+  purchase_type: string;
+  persian_name?: string;
+  phone?: string;
+  province?: string;
+  city?: string;
+  address?: string;
+  postal_code?: string;
+  plate?: string;
 }
 
 export async function POST(request: Request) {
@@ -48,7 +56,15 @@ export async function POST(request: Request) {
           amount: body.amount,
           description: body.description,
           currency: body.currency,
-          instagram_id: body.instagram
+          instagram_id: body.instagram,
+          purchase_type: 'digital',
+          persian_name: body.persian_name,
+          phone: body.phone,
+          province: body.province,
+          city: body.city,
+          address: body.address,
+          postal_code: body.postal_code,
+          plate: body.plate
         }),
       });
 

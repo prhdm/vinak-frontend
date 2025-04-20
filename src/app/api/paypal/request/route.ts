@@ -8,7 +8,14 @@ const requestSchema = z.object({
   currency: z.string().min(1),
   name: z.string().min(1),
   email: z.string().email(),
-  instagram: z.string().min(1)
+  instagram: z.string().min(1),
+  purchase_type: z.string().min(1),
+  persian_name: z.string().min(1),
+  phone: z.string().min(1),
+  province: z.string().min(1),
+  city: z.string().min(1),
+  address: z.string().min(1),
+  postal_code: z.string().min(1),
 });
 
 export async function POST(request: Request) {
@@ -39,7 +46,7 @@ export async function POST(request: Request) {
           },
         ],
         application_context: {
-          return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/verify/paypal?orderCode=${validatedData.orderCode}`,
+          return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/payment/paypal/callback?orderCode=${validatedData.orderCode}`,
           cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/cancel`,
         },
       }),
@@ -60,6 +67,41 @@ export async function POST(request: Request) {
       throw new Error('لینک پرداخت یافت نشد');
     }
 
+    try {
+      const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/v1/payment/prepare`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: validatedData.name,
+          instagram_id: validatedData.instagram,
+          email: validatedData.email,
+          amount: validatedData.amount,
+          currency: validatedData.currency,
+          purchase_type: validatedData.purchase_type,
+          persian_name: validatedData.persian_name,
+          phone: validatedData.phone,
+          province: validatedData.province,
+          city: validatedData.city,
+          address: validatedData.address,
+        }),
+      });
+
+      if (!prepareResponse.ok) {
+        throw new Error('خطا در آماده‌سازی پرداخت');
+      }
+
+      const prepareData = await prepareResponse.json();
+      console.log('Prepare data:', prepareData);
+    } catch (error) {
+      console.error('Error in prepare request:', error);
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'خطا در پردازش درخواست' },
+        { status: 400 }
+      );
+    }
+      
     return NextResponse.json({
       paymentUrl: approveLink.href,
       orderId: paypalData.id,
