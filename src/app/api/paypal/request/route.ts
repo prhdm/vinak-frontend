@@ -80,11 +80,13 @@ export async function POST(request: Request) {
           amount: validatedData.amount,
           currency: validatedData.currency,
           purchase_type: validatedData.purchase_type,
-          persian_name: validatedData.persian_name,
-          phone: validatedData.phone,
-          province: validatedData.province,
-          city: validatedData.city,
-          address: validatedData.address,
+          persian_name: body.persian_name,
+          phone_number: body.phone,
+          province: body.province,
+          city: body.city,
+          address: body.address,
+          postal_code: body.postal_code,
+          plate_number: body.plate
         }),
       });
 

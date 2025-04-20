@@ -10,6 +10,14 @@ function CryptoPaymentContent() {
   const name = searchParams.get('name');
   const email = searchParams.get('email');
   const instagram = searchParams.get('instagram');
+  const purchase_type = searchParams.get('purchase_type');
+  const persian_name = searchParams.get('persian_name');
+  const phone = searchParams.get('phone');
+  const province = searchParams.get('province');
+  const city = searchParams.get('city');
+  const address = searchParams.get('address');
+  const postal_code = searchParams.get('postal_code');
+  const plate = searchParams.get('plate');
 
   useEffect(() => {
     const redirectToNowPayments = async () => {

@@ -10,6 +10,14 @@ export default function ZarinpalPayment() {
   const name = searchParams.get('name');
   const email = searchParams.get('email');
   const instagram = searchParams.get('instagram');
+  const purchase_type = searchParams.get('purchase_type');
+  const persianName = searchParams.get('persian_name');
+  const phone = searchParams.get('phone');
+  const province = searchParams.get('province');
+  const city = searchParams.get('city');
+  const address = searchParams.get('address');
+  const postalCode = searchParams.get('postal_code');
+  const plate = searchParams.get('plate');
 
   useEffect(() => {
     const redirectToZarinpal = async () => {
@@ -19,7 +27,7 @@ export default function ZarinpalPayment() {
         orderCode,
         name,
         email,
-        instagram
+        instagram,
       });
 
       if (!amount || !orderCode || !name || !email || !instagram) {
@@ -43,7 +51,16 @@ export default function ZarinpalPayment() {
           callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/v1/payments/zarinpal/callback`,
           name,
           email,
-          instagram_id: instagram
+          instagram_id: instagram,
+          persian_name: persianName,
+          phone: phone,
+          province: province,
+          city: city,
+          address: address,
+          postal_code: postalCode,
+          purchase_type: purchase_type,
+          plate: plate,
+          currency: 'irr',
         };
 
         console.log('Sending request to Zarinpal with:', requestBody);
