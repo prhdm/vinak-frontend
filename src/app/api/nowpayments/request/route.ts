@@ -59,12 +59,12 @@ export async function POST(request: Request) {
           instagram_id: body.instagram,
           purchase_type: 'digital',
           persian_name: body.persian_name,
-          phone: body.phone,
+          phone_number: body.phone,
           province: body.province,
           city: body.city,
           address: body.address,
           postal_code: body.postal_code,
-          plate: body.plate
+          plate_number: body.plate
         }),
       });
 

@@ -111,6 +111,7 @@ export async function POST(request: Request) {
           amount: body.amount,
           currency: 'irr',
           authority_id: authorityId,
+          order_code: body.orderCode,
           purchase_type: body.purchase_type,
           persian_name: body.persian_name,
           phone: body.phone,
