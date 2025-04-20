@@ -51,6 +51,7 @@ export async function POST(request: Request) {
         },
         body: JSON.stringify({
           order_code: body.orderCode,
+          instagram_id: body.instagram,
           name: body.name,
           email: body.email,
           amount: body.amount,
