@@ -25,8 +25,8 @@ const sfProRounded = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "AK-47 Album Pre-sale",
-  description: "Pre-sale page for AK-47 album by ARTA x KOOROSH",
+  title: "GHEDDIS | Album Pre-sale",
+  description: "Pre-sale Website for GHEDDIS album by VINAK",
   icons: {
     icon: '/favicon.ico',
   },
