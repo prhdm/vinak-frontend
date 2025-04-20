@@ -35,17 +35,19 @@ export async function POST(request: Request) {
     console.log('Validated request data:', validatedData);
 
     // Get PayPal access token
-    const tokenResponse = await fetch(`${process.env.NEXT_PUBLIC_PAYPAL_SANDBOX_URL}/v1/oauth2/token`, {
+    const tokenResponse = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Accept-Language': 'en_US',
-        'Authorization': `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET_KEY}`).toString('base64')}`,
+        'Authorization': `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.NEXT_PUBLIC_PAYPAL_SECRET_KEY}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: 'grant_type=client_credentials'
     });
 
     console.log('Token response status:', tokenResponse.status);
+    console.log('Using client ID:', process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
     const tokenText = await tokenResponse.text();
     console.log('Token raw response:', tokenText);
 
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
     }
 
     // ایجاد درخواست پرداخت به پی‌پال
-    const paypalResponse = await fetch(`${process.env.NEXT_PUBLIC_PAYPAL_SANDBOX_URL}/v2/checkout/orders`, {
+    const paypalResponse = await fetch('https://api-m.paypal.com/v2/checkout/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
