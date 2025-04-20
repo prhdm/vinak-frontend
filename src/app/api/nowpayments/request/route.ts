@@ -55,16 +55,15 @@ export async function POST(request: Request) {
           email: body.email,
           amount: body.amount,
           description: body.description,
-          currency: body.currency,
-          instagram_id: body.instagram,
+          currency: 'usd',
           purchase_type: body.purchase_type,
           persian_name: body.persian_name,
-          phone_number: body.phone,
+          phone: body.phone,
           province: body.province,
           city: body.city,
           address: body.address,
           postal_code: body.postal_code,
-          plate_number: body.plate
+          plate: body.plate
         }),
       });
 
