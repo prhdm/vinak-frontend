@@ -40,14 +40,14 @@ export async function POST(request: Request) {
       headers: {
         'Accept': 'application/json',
         'Accept-Language': 'en_US',
-        'Authorization': `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.NEXT_PUBLIC_PAYPAL_SECRET_KEY}`).toString('base64')}`,
+        'Authorization': `Basic ${Buffer.from(`${process.env.PAYPAL_LIVE_CLIENT_ID}:${process.env.PAYPAL_LIVE_SECRET_KEY}`).toString('base64')}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: 'grant_type=client_credentials'
     });
 
     console.log('Token response status:', tokenResponse.status);
-    console.log('Using client ID:', process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
+    console.log('Using client ID:', process.env.PAYPAL_LIVE_CLIENT_ID);
     const tokenText = await tokenResponse.text();
     console.log('Token raw response:', tokenText);
 
