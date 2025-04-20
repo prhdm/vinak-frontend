@@ -96,8 +96,19 @@ function CryptoPaymentContent() {
           email: email,
           currency: 'usd',
           amount: Number(amount),
-          order_id: orderCode
+          order_id: orderCode,
+          purchase_type: purchase_type || 'digital',
+          persian_name: persian_name || '',
+          phone_number: phone || '',
+          province: province || '',
+          city: city || '',
+          address: address || '',
+          postal_code: postal_code || '',
+          plate_number: plate || ''
         }
+
+        console.log('Prepare request body:', prepareRequestBody);
+        
         const prepareResponse = await fetch('/api/v1/payment/prepare', {
           method: 'POST',
           headers: {
