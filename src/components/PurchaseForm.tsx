@@ -40,49 +40,7 @@ const PurchaseForm: React.FC = () => {
   const [selectedProvince, setSelectedProvince] = useState<string>('');
 
   const validatePostalCode = (postalCode: string) => {
-    if (!selectedProvince) return true;
-    
-    const code = parseInt(postalCode.substring(0, 3));
-    
-    // محدوده کد پستی برای هر استان
-    const postalCodeRanges: Record<string, { min: number; max: number }> = {
-      'آذربایجان شرقی': { min: 513, max: 519 },
-      'آذربایجان غربی': { min: 571, max: 577 },
-      'اردبیل': { min: 551, max: 557 },
-      'اصفهان': { min: 811, max: 817 },
-      'البرز': { min: 315, max: 317 },
-      'ایلام': { min: 693, max: 699 },
-      'بوشهر': { min: 751, max: 757 },
-      'تهران': { min: 131, max: 139 },
-      'چهارمحال و بختیاری': { min: 881, max: 887 },
-      'خراسان جنوبی': { min: 971, max: 977 },
-      'خراسان رضوی': { min: 913, max: 919 },
-      'خراسان شمالی': { min: 941, max: 947 },
-      'خوزستان': { min: 631, max: 637 },
-      'زنجان': { min: 451, max: 457 },
-      'سمنان': { min: 351, max: 357 },
-      'سیستان و بلوچستان': { min: 981, max: 987 },
-      'فارس': { min: 711, max: 717 },
-      'قزوین': { min: 341, max: 347 },
-      'قم': { min: 371, max: 377 },
-      'کردستان': { min: 661, max: 667 },
-      'کرمان': { min: 761, max: 767 },
-      'کرمانشاه': { min: 671, max: 677 },
-      'کهگیلویه و بویراحمد': { min: 751, max: 757 },
-      'گلستان': { min: 491, max: 497 },
-      'گیلان': { min: 411, max: 417 },
-      'لرستان': { min: 681, max: 687 },
-      'مازندران': { min: 471, max: 477 },
-      'مرکزی': { min: 381, max: 387 },
-      'هرمزگان': { min: 791, max: 797 },
-      'همدان': { min: 651, max: 657 },
-      'یزد': { min: 891, max: 897 }
-    };
-
-    const range = postalCodeRanges[selectedProvince];
-    if (!range) return true;
-
-    return code >= range.min && code <= range.max;
+    return true;
   };
 
   const {
