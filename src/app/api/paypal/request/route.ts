@@ -86,8 +86,10 @@ export async function POST(request: Request) {
           },
         ],
         application_context: {
-          return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1/payment/paypal/callback?orderCode=${validatedData.orderCode}`,
-          cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/payment/cancel`,
+          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/v1/payment/paypal/callback?orderCode=${validatedData.orderCode}`,
+          cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/payment/cancel`,
+          user_action: "PAY_NOW",
+          shipping_preference: "NO_SHIPPING"
         },
       }),
     });
