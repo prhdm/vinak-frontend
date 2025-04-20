@@ -34,12 +34,42 @@ export async function POST(request: Request) {
     console.log('=== PayPal Request Debug ===');
     console.log('Validated request data:', validatedData);
 
+    // Get PayPal access token
+    const tokenResponse = await fetch(`${process.env.NEXT_PUBLIC_PAYPAL_SANDBOX_URL}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Language': 'en_US',
+        'Authorization': `Basic ${Buffer.from(`${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET_KEY}`).toString('base64')}`,
+      },
+      body: 'grant_type=client_credentials'
+    });
+
+    console.log('Token response status:', tokenResponse.status);
+    const tokenText = await tokenResponse.text();
+    console.log('Token raw response:', tokenText);
+
+    let tokenData;
+    try {
+      tokenData = JSON.parse(tokenText);
+      console.log('Token parsed response:', tokenData);
+    } catch (error) {
+      console.error('Failed to parse token response:', error);
+      console.error('Raw token response was:', tokenText);
+      throw new Error('خطا در دریافت توکن پی‌پال');
+    }
+
+    if (!tokenResponse.ok || !tokenData.access_token) {
+      console.error('PayPal token error:', tokenData);
+      throw new Error('خطا در دریافت توکن پی‌پال');
+    }
+
     // ایجاد درخواست پرداخت به پی‌پال
     const paypalResponse = await fetch(`${process.env.NEXT_PUBLIC_PAYPAL_SANDBOX_URL}/v2/checkout/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.PAYPAL_SECRET_KEY}`,
+        'Authorization': `Bearer ${tokenData.access_token}`,
       },
       body: JSON.stringify({
         intent: 'CAPTURE',
@@ -60,18 +90,29 @@ export async function POST(request: Request) {
       }),
     });
 
-    if (!paypalResponse.ok) {
-      const errorData = await paypalResponse.json();
-      console.error('PayPal API Error:', errorData);
-      throw new Error('خطا در ایجاد درخواست پرداخت پی‌پال');
+    console.log('PayPal response status:', paypalResponse.status);
+    const responseText = await paypalResponse.text();
+    console.log('PayPal raw response:', responseText);
+
+    let paypalData;
+    try {
+      paypalData = JSON.parse(responseText);
+      console.log('PayPal parsed response:', paypalData);
+    } catch (error) {
+      console.error('Failed to parse PayPal response:', error);
+      console.error('Raw response was:', responseText);
+      throw new Error('خطا در پاسخ دریافتی از پی‌پال');
     }
 
-    const paypalData = await paypalResponse.json();
-    console.log('PayPal API Response:', paypalData);
+    if (!paypalResponse.ok) {
+      console.error('PayPal API Error:', paypalData);
+      throw new Error(paypalData.message || 'خطا در ایجاد درخواست پرداخت پی‌پال');
+    }
 
     // پیدا کردن لینک تایید پرداخت
-    const approveLink = paypalData.links.find((link: any) => link.rel === 'approve');
+    const approveLink = paypalData.links?.find((link: any) => link.rel === 'approve');
     if (!approveLink) {
+      console.error('No approve link found in PayPal response:', paypalData);
       throw new Error('لینک پرداخت یافت نشد');
     }
 
