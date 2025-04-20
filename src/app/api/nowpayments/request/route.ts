@@ -57,7 +57,7 @@ export async function POST(request: Request) {
           description: body.description,
           currency: body.currency,
           instagram_id: body.instagram,
-          purchase_type: 'digital',
+          purchase_type: body.purchase_type,
           persian_name: body.persian_name,
           phone_number: body.phone,
           province: body.province,

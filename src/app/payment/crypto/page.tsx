@@ -51,7 +51,15 @@ function CryptoPaymentContent() {
           currency: 'usd',
           name,
           email,
-          instagram
+          instagram,
+          persian_name,
+          phone,
+          province,
+          city,
+          address,
+          postal_code,
+          plate,
+          purchase_type
         };
 
         console.log('Sending request to NowPayments with:', requestBody);
