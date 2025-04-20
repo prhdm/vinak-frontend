@@ -9,13 +9,21 @@ const requestSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   instagram: z.string().min(1),
-  purchase_type: z.string().min(1),
-  persian_name: z.string().min(1),
-  phone: z.string().min(1),
-  province: z.string().min(1),
-  city: z.string().min(1),
-  address: z.string().min(1),
-  postal_code: z.string().min(1),
+  purchase_type: z.enum(['physical', 'digital']),
+  persian_name: z.string().optional(),
+  phone: z.string().optional(),
+  province: z.string().optional(),
+  city: z.string().optional(),
+  address: z.string().optional(),
+  postal_code: z.string().optional(),
+  plate: z.string().optional(),
+}).refine((data) => {
+  if (data.purchase_type === 'physical') {
+    return !!(data.persian_name && data.phone && data.province && data.city && data.address && data.postal_code);
+  }
+  return true;
+}, {
+  message: "لطفا اطلاعات را کامل وارد کنید"
 });
 
 export async function POST(request: Request) {
