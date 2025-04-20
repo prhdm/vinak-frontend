@@ -1,65 +1,44 @@
 import { NextResponse } from 'next/server';
+import type { PaymentData } from '@/types/payment';
 
-interface PaymentRequest {
-  amount: number;
-  currency: string;
-  gateway: string;
-}
+// ذخیره‌سازی موقت کدهای تایید
+const verificationCodes: Record<string, string> = {};
 
 export async function POST(request: Request) {
   try {
-    const { amount, currency, gateway } = await request.json() as PaymentRequest;
-    const authHeader = request.headers.get('Authorization');
+    const { email, code, amount, currency, name, instagram } = await request.json() as PaymentData;
 
-    if (!authHeader) {
+    if (!email || !code || !amount || !currency || !name || !instagram) {
       return NextResponse.json(
-        { error: 'Authorization header is required' },
-        { status: 401 }
+        { error: 'همه فیلدها الزامی هستند' },
+        { status: 400 }
       );
     }
 
-    console.log('Making payment request to backend:', {
-      url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payments`,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader,
-      },
-      body: {
-        amount,
-        currency: currency.toLowerCase(),
-        gateway: gateway.toLowerCase(),
-      }
-    });
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/payments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader,
-      },
-      body: JSON.stringify({
-        amount,
-        currency: currency.toLowerCase(),
-        gateway: gateway.toLowerCase(),
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Backend payment error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData
-      });
-      throw new Error(errorData.error || `Failed to create payment: ${response.statusText}`);
+    // بررسی کد تایید
+    if (!verificationCodes[email] || verificationCodes[email] !== code) {
+      return NextResponse.json(
+        { error: 'کد تایید نامعتبر است' },
+        { status: 400 }
+      );
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    // در اینجا می‌توانید پرداخت را با درگاه پرداخت مورد نظر انجام دهید
+    // برای تست، یک کد سفارش تصادفی تولید می‌کنیم
+    const orderCode = Math.random().toString(36).substring(2, 15);
+
+    // حذف کد تایید پس از استفاده
+    delete verificationCodes[email];
+
+    return NextResponse.json({ 
+      success: true,
+      orderCode,
+      message: 'پرداخت با موفقیت انجام شد'
+    });
   } catch (error) {
     console.error('Error in payment:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'خطا در ایجاد پرداخت' },
+      { error: 'خطا در پردازش پرداخت' },
       { status: 500 }
     );
   }

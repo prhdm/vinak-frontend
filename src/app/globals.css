@@ -13,7 +13,7 @@
 @font-face {
   font-family: 'SFProRounded';
   src: url('/fonts/sf-pro-rounded-regular.otf') format('opentype');
-  font-weight: normal;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -30,33 +30,57 @@
   font-family: 'IranYekan', sans-serif;
 }
 
-.font-sf {
+.font-sf-pro-rounded {
   font-family: 'SFProRounded', sans-serif;
 }
 
 :root {
-  --primary-color: #b62c2c;
+  --primary-color: #c53131;
   --secondary-color: #f2f2f7;
   --accent-color: #007aff;
 }
 
 .theme-spotify {
-  --background: #b62c2c;
+  --background: #b62727;
   --foreground: #ffffff;
   --primary-color: #8a9c90;
   --secondary-color: #121212;
   --accent-color: #038932;
 }
 
+/* جلوگیری از زوم در موبایل */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  select:focus,
+  textarea:focus,
+  input:focus {
+    font-size: 16px !important;
+  }
+}
+
 html, body {
-  background-color: #b62c2c;
+  background-color: #4B0000;
   scroll-behavior: smooth;
   overscroll-behavior-y: none;
 }
 
 body {
-  background-color: var(--background);
+  background-color: #4B0000;
   font-family: 'Inter', sans-serif;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    padding: 0;
+    margin: 0;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -74,30 +98,68 @@ body {
 }
 
 * {
-  scrollbar-color: #000000 transparent;
-  scrollbar-width: thin;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
+
 .header {
   background-color: var(--primary-color);
-  color: var(--foreground);
+  color: white;
   padding: 1rem;
   text-align: center;
 }
 
 .button {
   background-color: var(--accent-color);
-  color: var(--foreground);
+  color: white;
   padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
   border: none;
-  border-radius: 0.375rem;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: var(--accent-color-dark);
 }
 
 .card {
   background-color: var(--secondary-color);
-  padding: 1rem;
   border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1a1a;
+    --foreground: #ffffff;
+    --primary-color: #2d2d2d;
+    --secondary-color: #1a1a1a;
+    --accent-color: #007aff;
+    --accent-color-dark: #0056b3;
+  }
+
+  .dark {
+    --background: #1a1a1a;
+    --foreground: #ffffff;
+    --primary-color: #2d2d2d;
+    --secondary-color: #1a1a1a;
+    --accent-color: #007aff;
+    --accent-color-dark: #0056b3;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
 }
 
 @layer base {

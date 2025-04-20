@@ -1,40 +1,32 @@
 import { NextResponse } from 'next/server';
-
-interface VerifyOTPRequest {
-  email: string;
-  otp: string;
-  instagram_id: string;
-  name: string;
-}
+import { VerifyOTPRequest } from '@/types/auth';
 
 export async function POST(request: Request) {
   try {
-    const { email, otp, instagram_id, name } = await request.json() as VerifyOTPRequest;
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/verify-otp`, {
+    const body: VerifyOTPRequest = await request.json();
+    console.log('Received OTP verification request:', body);
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/send-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        email,
-        otp,
-        instagram_id,
-        name,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to verify OTP');
+      return NextResponse.json(
+        { error: error.error || 'Failed to verify OTP' },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error in verify-otp:', error);
+    console.error('Error verifying OTP:', error);
     return NextResponse.json(
-      { error: 'خطا در تایید کد' },
+      { error: 'Failed to verify OTP' },
       { status: 500 }
     );
   }

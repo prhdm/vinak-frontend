@@ -1,28 +1,37 @@
 import { NextResponse } from 'next/server';
+import { SendOTPRequest } from '@/types/auth';
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const body: SendOTPRequest = await request.json();
+    console.log('Sending OTP request:', { email: body.email });
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/send-otp`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/send-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify(body),
     });
 
+    console.log('Backend response status:', response.status);
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to send OTP');
+      const errorData = await response.json();
+      console.error('Backend error:', errorData);
+      return NextResponse.json(
+        { error: errorData.error || 'Failed to send OTP' },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
+    console.log('Backend success response:', data);
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error in send-otp:', error);
+    console.error('Error in send-otp route:', error);
     return NextResponse.json(
-      { error: 'خطا در ارسال کد تایید' },
+      { error: 'Failed to send OTP' },
       { status: 500 }
     );
   }

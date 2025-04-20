@@ -2,6 +2,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -33,22 +34,17 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
 # IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+.idea
+.vscode
 
-# Docker
-.dockerignore
-Dockerfile
-docker-compose.yml
-
-# Logs
-logs
-*.log
-
-# Cache
-.cache/
-.npm/
-.eslintcache 
+# logs
+/logs 

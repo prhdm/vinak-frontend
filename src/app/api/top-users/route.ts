@@ -1,53 +1,62 @@
 import { NextResponse } from 'next/server';
 
-interface Supporter {
+interface TopUser {
   name: string;
-  instagram: string;
-  amount: number;
-  currency: 'USD' | 'IRR';
+  instagram_id: string;
+  total_amount: number;
+}
+
+interface TopSupportersResponse {
+  top_users: TopUser[];
 }
 
 export async function GET() {
   try {
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/top-users`;
-    console.log('Calling backend at:', url);
-
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/top-users`, {
+      cache: 'no-store'
     });
 
     if (!response.ok) {
-      console.error('Backend response not OK:', response.status, response.statusText);
-      throw new Error('Failed to fetch supporters from backend');
+      const errorData = await response.json().catch(() => null);
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData
+      });
+      throw new Error(`Failed to fetch top users: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    console.log('Received data from backend:', data);
-
-    const rawSupporters = data?.supporters;
-    const supporters: Supporter[] = Array.isArray(rawSupporters) ? rawSupporters : [];
-
-    const supportersUSD = supporters
-      .filter((s) => s.currency === 'USD')
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
-
-    const supportersIRR = supporters
-      .filter((s) => s.currency === 'IRR')
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
-
-    return NextResponse.json({
-      usd: supportersUSD,
-      irr: supportersIRR,
+    const data: TopSupportersResponse = await response.json();
+    
+    // تبدیل داده‌ها به فرمت مورد نیاز
+    const supporters = data.top_users.map((user: TopUser) => {
+      // اگر مبلغ کمتر از 1000 باشد، فرض می‌کنیم دلار است
+      // اگر مبلغ بین 1000 تا 1000000 باشد، فرض می‌کنیم nowpayments است
+      // اگر مبلغ بیشتر از 1000000 باشد، فرض می‌کنیم ریال است
+      let currency: 'IRR' | 'USD' | 'NOW' = 'IRR';
+      if (user.total_amount < 1000) {
+        currency = 'USD';
+      } else if (user.total_amount < 1000000) {
+        currency = 'NOW';
+      }
+      
+      return {
+        name: user.name,
+        instagram: user.instagram_id,
+        amount: user.total_amount,
+        currency
+      };
     });
+
+    return NextResponse.json({ supporters });
   } catch (error) {
-    console.error('Error in top-users:', error);
+    console.error('Error fetching top users:', error);
     return NextResponse.json(
-      { error: 'خطا در دریافت اطلاعات' },
+      { 
+        error: 'Failed to fetch top users',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
-}
+} 

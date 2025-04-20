@@ -53,6 +53,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-sans)', 'Arial', 'Helvetica', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
+        'sf-pro-rounded': ['SFProRounded', 'var(--font-sans)', 'Arial', 'Helvetica', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',

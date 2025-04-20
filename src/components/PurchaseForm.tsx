@@ -4,34 +4,23 @@ import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Loader2 } from 'lucide-react';
-import EmailVerificationPopup from "./EmailVerificationPopup";
-import iranCities from '../data/iran-cities.json';
-
-interface Province {
-  id: number;
-  name: string;
-  cities: string[];
-}
-
-interface IranCities {
-  provinces: Province[];
-}
+import { provinces, cities, Province, City } from '@/data/iran-locations';
 
 interface FormData {
-  versionType: 'digital' | 'physical';
   name: string;
-  persianName?: string;
   email: string;
   instagram: string;
   amount: number;
   paymentMethod: 'zarinpal' | 'crypto' | 'paypal';
   currency: 'USD' | 'IRR';
+  version: 'digital' | 'physical';
+  persianName?: string;
   phone?: string;
-  address?: string;
-  postalCode?: string;
-  houseNumber?: string;
   province?: string;
   city?: string;
+  address?: string;
+  postalCode?: string;
+  plate?: string;
 }
 
 const persianToLatinDigits = (str: string): string => {
@@ -47,9 +36,54 @@ const latinToPersianDigits = (str: string): string => {
 const PurchaseForm: React.FC = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [selectedVersion, setSelectedVersion] = useState<'digital' | 'physical'>('digital');
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+
+  const validatePostalCode = (postalCode: string) => {
+    if (!selectedProvince) return true;
+    
+    const code = parseInt(postalCode.substring(0, 3));
+    
+    // محدوده کد پستی برای هر استان
+    const postalCodeRanges: Record<string, { min: number; max: number }> = {
+      'آذربایجان شرقی': { min: 513, max: 519 },
+      'آذربایجان غربی': { min: 571, max: 577 },
+      'اردبیل': { min: 551, max: 557 },
+      'اصفهان': { min: 811, max: 817 },
+      'البرز': { min: 315, max: 317 },
+      'ایلام': { min: 693, max: 699 },
+      'بوشهر': { min: 751, max: 757 },
+      'تهران': { min: 131, max: 139 },
+      'چهارمحال و بختیاری': { min: 881, max: 887 },
+      'خراسان جنوبی': { min: 971, max: 977 },
+      'خراسان رضوی': { min: 913, max: 919 },
+      'خراسان شمالی': { min: 941, max: 947 },
+      'خوزستان': { min: 631, max: 637 },
+      'زنجان': { min: 451, max: 457 },
+      'سمنان': { min: 351, max: 357 },
+      'سیستان و بلوچستان': { min: 981, max: 987 },
+      'فارس': { min: 711, max: 717 },
+      'قزوین': { min: 341, max: 347 },
+      'قم': { min: 371, max: 377 },
+      'کردستان': { min: 661, max: 667 },
+      'کرمان': { min: 761, max: 767 },
+      'کرمانشاه': { min: 671, max: 677 },
+      'کهگیلویه و بویراحمد': { min: 751, max: 757 },
+      'گلستان': { min: 491, max: 497 },
+      'گیلان': { min: 411, max: 417 },
+      'لرستان': { min: 681, max: 687 },
+      'مازندران': { min: 471, max: 477 },
+      'مرکزی': { min: 381, max: 387 },
+      'هرمزگان': { min: 791, max: 797 },
+      'همدان': { min: 651, max: 657 },
+      'یزد': { min: 891, max: 897 }
+    };
+
+    const range = postalCodeRanges[selectedProvince];
+    if (!range) return true;
+
+    return code >= range.min && code <= range.max;
+  };
 
   const {
     register,
@@ -60,47 +94,46 @@ const PurchaseForm: React.FC = () => {
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      versionType: 'digital',
       name: '',
       email: '',
       instagram: '',
       amount: 420000,
       paymentMethod: 'zarinpal',
       currency: 'IRR',
+      version: 'digital',
     },
   });
 
-  const versionType = watch('versionType');
   const [amountDisplay, setAmountDisplay] = useState<string>('');
   const [finalAmountDisplay, setFinalAmountDisplay] = useState<string>('');
+  const amount = watch('amount');
   const currency = watch('currency');
 
   useEffect(() => {
     if (currency === 'IRR') {
       setValue('paymentMethod', 'zarinpal');
-      if (versionType === 'physical') {
-        setValue('amount', 1000000);
-        setAmountDisplay((1000000).toLocaleString('fa-IR'));
-        setFinalAmountDisplay((1000000 * 1.14).toLocaleString('fa-IR'));
-      } else {
+      if (selectedVersion === 'digital') {
         setValue('amount', 420000);
         setAmountDisplay((420000).toLocaleString('fa-IR'));
         setFinalAmountDisplay((420000 * 1.14).toLocaleString('fa-IR'));
+      } else {
+        setValue('amount', 1000000);
+        setAmountDisplay((1000000).toLocaleString('fa-IR'));
+        setFinalAmountDisplay((1000000 * 1.14).toLocaleString('fa-IR'));
       }
     } else if (currency === 'USD') {
-      if (versionType === 'physical') {
         setValue('paymentMethod', 'crypto');
-        setValue('amount', 20);
-        setAmountDisplay((20).toLocaleString('fa-IR'));
-        setFinalAmountDisplay((20 * 1.07).toLocaleString('fa-IR'));
-      } else {
-        setValue('paymentMethod', 'crypto');
+      if (selectedVersion === 'digital') {
         setValue('amount', 12);
         setAmountDisplay((12).toLocaleString('fa-IR'));
         setFinalAmountDisplay((12 * 1.07).toLocaleString('fa-IR'));
+      } else {
+        setValue('amount', 20);
+        setAmountDisplay((20).toLocaleString('fa-IR'));
+        setFinalAmountDisplay((20 * 1.07).toLocaleString('fa-IR'));
       }
     }
-  }, [currency, versionType, setValue]);
+  }, [currency, selectedVersion, setValue]);
 
   const updateFinalAmount = (amount: number) => {
     if (currency === 'IRR') {
@@ -114,21 +147,21 @@ const PurchaseForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Send OTP
-      const otpResponse = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: data.email }),
-      });
+      const formData = watch();
+      const finalAmount = formData.currency === 'IRR' 
+        ? Math.round(formData.amount * 1.14)
+        : Math.round(formData.amount * 1.07);
 
-      if (!otpResponse.ok) {
-        const error = await otpResponse.json();
-        throw new Error(error.error || 'خطا در ارسال کد تایید');
+      // Generate a random orderCode
+      const orderCode = Math.random().toString(36).substring(2, 15);
+
+      if (formData.currency === 'IRR') {
+        // Redirect to Zarinpal payment page
+        window.location.href = `/payment/zarinpal?amount=${finalAmount}&orderCode=${orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}`;
+      } else {
+        // Redirect to NOWPayments page
+        window.location.href = `/payment/crypto?amount=${finalAmount}&orderCode=${orderCode}&name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}&instagram=${encodeURIComponent(formData.instagram)}`;
       }
-
-      setShowVerification(true);
     } catch (error) {
       console.error('Error:', error);
       alert('خطا در پردازش درخواست. لطفاً دوباره تلاش کنید.');
@@ -142,99 +175,45 @@ const PurchaseForm: React.FC = () => {
 
     try {
       const formData = watch();
-      let finalAmount = formData.amount;
+      const finalAmount = formData.currency === 'IRR' 
+        ? Math.round(formData.amount * 1.14)
+        : Math.round(formData.amount * 1.07);
 
-      if (formData.currency === 'IRR') {
-        finalAmount = Math.round(formData.amount * 1.14);
-      } else if (formData.currency === 'USD') {
-        finalAmount = Math.round(formData.amount * 1.07);
-      }
-
-      // Verify OTP and create user
-      const verifyResponse = await fetch('/api/verify-otp', {
+      const paymentResponse = await fetch('/api/payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: formData.email,
-          otp: code,
-          instagram_id: formData.instagram,
-          name: formData.name,
+          ...formData,
+          amount: finalAmount,
+          code,
         }),
       });
 
-      if (!verifyResponse.ok) {
-        const error = await verifyResponse.json();
-        throw new Error(error.error || 'خطا در تایید کد');
-      }
-
-      const verifyData = await verifyResponse.json();
-      console.log('Verification response:', verifyData);
-      
-      if (!verifyData.api_key) {
-        throw new Error('API key not received from verification');
-      }
-
-      // Store the API key
-      setApiKey(verifyData.api_key);
-      setShowVerification(false);
-
-      // Map payment method to gateway
-      const gatewayMap = {
-        'zarinpal': 'zarinpal',
-        'crypto': 'nowpayments',
-        'paypal': 'paypal'
-      };
-
-      const paymentData = {
-        amount: finalAmount,
-        currency: formData.currency.toLowerCase(),
-        gateway: gatewayMap[formData.paymentMethod as keyof typeof gatewayMap],
-      };
-
-      console.log('Making payment request with:', {
-        ...paymentData,
-        apiKey: verifyData.api_key
-      });
-
-      // Proceed with payment
-      const paymentResponse = await fetch('/api/payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `${verifyData.api_key}`,
-        },
-        body: JSON.stringify(paymentData),
-      });
-
-      if (!paymentResponse.ok) {
-        const error = await paymentResponse.json();
-        console.error('Payment error:', error);
-        throw new Error(error.error || 'خطا در ایجاد پرداخت');
-      }
-
       const result = await paymentResponse.json();
-      console.log('Payment response:', result);
-      
-      // Handle payment response based on gateway
-      if (formData.paymentMethod === 'zarinpal') {
-        // Redirect to Zarinpal payment page
-        window.location.href = result.payment_url;
-      } else if (formData.paymentMethod === 'paypal') {
-        // Redirect to PayPal payment page
-        window.location.href = result.payment_url;
-      } else if (formData.paymentMethod === 'crypto') {
-        // Show crypto payment details
-        router.push(`/crypto-payment?orderId=${result.order_id}`);
+
+      if (paymentResponse.ok) {
+        if (formData.paymentMethod === 'zarinpal') {
+          window.location.href = `/payment/zarinpal?amount=${finalAmount}&orderCode=${result.orderCode}`;
+        } else if (formData.paymentMethod === 'crypto') {
+          window.location.href = `/payment/crypto?amount=${finalAmount}&orderCode=${result.orderCode}`;
+        }
+        return true;
+      } else {
+        return false;
       }
-    } catch (error) {
-      console.error('Error:', error);
-      alert(error instanceof Error ? error.message : 'خطا در پردازش پرداخت. لطفاً دوباره تلاش کنید.');
-      router.push('/cancel');
+    } catch {
+      return false;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const province = e.target.value;
+    setSelectedProvince(province);
+    setValue('city', '');
   };
 
   return (
@@ -242,30 +221,31 @@ const PurchaseForm: React.FC = () => {
       <form
         onSubmit={handleSubmit(onSubmit)}
         dir="rtl"
-        className="w-full bg-neutral-900 text-white p-8 px-6 rounded-3xl border border-neutral-700 transition-all duration-300 font-iranyekan"
+        className="w-full max-w-[95vw] mx-auto bg-neutral-900 text-neutral-100 p-6 sm:p-10 px-4 sm:px-6 rounded-3xl border border-neutral-800 transition-all duration-300 font-iranyekan shadow-lg"
       >
-        <h2 className="mb-8 text-2xl md:text-2xl text-center">فرم خرید آلبوم</h2>
+        <h2 className="mb-10 text-2xl md:text-2xl text-center">فرم خرید آلبوم</h2>
         
-        <div className="mb-8">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-8">
+          <div>
+            <div className="flex gap-4">
             <button
               type="button"
-              onClick={() => setValue('versionType', 'digital')}
-              className={`w-full py-4 px-6 rounded-xl transition ${
-                versionType === 'digital'
-                  ? 'bg-[#b62c2c] text-white'
-                  : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                onClick={() => setSelectedVersion('digital')}
+                className={`w-full py-4 px-6 text-base rounded-xl border transition ${
+                  selectedVersion === 'digital'
+                    ? 'bg-[#8B0000] border-[#8B0000] text-white'
+                    : 'bg-neutral-800 border-neutral-700 text-neutral-100 hover:bg-neutral-700'
               }`}
             >
               نسخه دیجیتال
             </button>
             <button
               type="button"
-              onClick={() => setValue('versionType', 'physical')}
-              className={`w-full py-4 px-6 rounded-xl transition ${
-                versionType === 'physical'
-                  ? 'bg-[#b62c2c] text-white'
-                  : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                onClick={() => setSelectedVersion('physical')}
+                className={`w-full py-4 px-6 text-base rounded-xl border transition ${
+                  selectedVersion === 'physical'
+                    ? 'bg-[#8B0000] border-[#8B0000] text-white'
+                    : 'bg-neutral-800 border-neutral-700 text-neutral-100 hover:bg-neutral-700'
               }`}
             >
               نسخه فیزیکی
@@ -273,10 +253,8 @@ const PurchaseForm: React.FC = () => {
           </div>
         </div>
 
-        {!showForm ? (
-          <div className="space-y-6">
             <div>
-              <label className="block text-sm mb-2">اسم به انگلیسی (برای نمایش در سایت)</label>
+            <label className="block text-base mb-3">اسم به انگلیسی (برای نمایش در سایت)</label>
               <input
                 {...register('name', {
                   required: 'وارد کردن نام به انگلیسی الزامی است',
@@ -287,67 +265,28 @@ const PurchaseForm: React.FC = () => {
                   },
                 })}
                 placeholder="Your Name or Nickname"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
+              className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
               />
-              {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>}
+            {errors.name && <p className="mt-2 text-sm text-red-400">{errors.name.message}</p>}
             </div>
 
-            <div>
-              <label className="block text-sm mb-2">آیدی اینستاگرام</label>
-              <input
-                {...register('instagram', {
-                  required: 'آیدی اینستاگرام الزامی است',
-                  pattern: {
-                    value: /^[a-zA-Z0-9._]+$/,
-                    message: 'آیدی نباید با @ شروع شود و فقط شامل حروف، عدد، نقطه یا _ باشد',
-                  },
-                  validate: (value) =>
-                    value.startsWith('@') ? 'لطفاً آیدی را بدون @ وارد کنید' : true,
-                })}
-                placeholder="Your Instagram ID"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-              />
-              {errors.instagram && <p className="mt-1 text-sm text-red-400">{errors.instagram.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm mb-2">ایمیل</label>
-              <input
-                {...register('email', {
-                  required: 'ایمیل الزامی است',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'ایمیل معتبر نیست',
-                  },
-                })}
-                type="email"
-                placeholder="example@email.com"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-              />
-              {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>}
-            </div>
-
-            {versionType === 'physical' && (
+          {selectedVersion === 'physical' && (
               <>
                 <div>
-                  <label className="block text-sm mb-2">اسم به فارسی</label>
+                <label className="block text-base mb-3">اسم به فارسی (برای پست)</label>
                   <input
                     {...register('persianName', {
                       required: 'وارد کردن نام به فارسی الزامی است',
                       minLength: { value: 2, message: 'نام باید حداقل ۲ کاراکتر باشد' },
-                      pattern: {
-                        value: /^[\u0600-\u06FF\s]+$/,
-                        message: 'فقط حروف فارسی وارد کنید',
-                      },
                     })}
-                    placeholder="نام شما به فارسی"
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
+                  placeholder="نام و نام خانوادگی"
+                  className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
                   />
-                  {errors.persianName && <p className="mt-1 text-sm text-red-400">{errors.persianName.message}</p>}
+                {errors.persianName && <p className="mt-2 text-sm text-red-400">{errors.persianName.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">شماره تلفن</label>
+                <label className="block text-base mb-3">شماره تلفن</label>
                   <input
                     {...register('phone', {
                       required: 'شماره تلفن الزامی است',
@@ -356,379 +295,101 @@ const PurchaseForm: React.FC = () => {
                         message: 'شماره تلفن باید ۱۱ رقم باشد',
                       },
                     })}
-                    placeholder="09123456789"
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
+                  placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                  className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
                   />
-                  {errors.phone && <p className="mt-1 text-sm text-red-400">{errors.phone.message}</p>}
+                {errors.phone && <p className="mt-2 text-sm text-red-400">{errors.phone.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">استان</label>
+                <label className="block text-base mb-3">استان</label>
                   <select
-                    {...register('province', {
-                      required: 'انتخاب استان الزامی است',
-                    })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 font-iranyekan"
-                    onChange={(e) => {
-                      setValue('province', e.target.value);
-                      setValue('city', ''); // Reset city when province changes
-                    }}
+                  id="province"
+                  {...register('province', { required: 'لطفا استان را انتخاب کنید' })}
+                  onChange={handleProvinceChange}
+                  className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
                   >
                     <option value="">انتخاب استان</option>
-                    {(iranCities as IranCities).provinces.map((province: Province) => (
+                  {provinces.map((province: Province) => (
                       <option key={province.id} value={province.name}>
                         {province.name}
                       </option>
                     ))}
                   </select>
-                  {errors.province && <p className="mt-1 text-sm text-red-400">{errors.province.message}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2">شهر</label>
-                  <select
-                    {...register('city', {
-                      required: 'انتخاب شهر الزامی است',
-                    })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 font-iranyekan"
-                    disabled={!watch('province')}
-                  >
-                    <option value="">انتخاب شهر</option>
-                    {watch('province') &&
-                      (iranCities as IranCities).provinces
-                        .find((p: Province) => p.name === watch('province'))
-                        ?.cities.map((city: string) => (
-                          <option key={city} value={city}>
-                            {city}
-                          </option>
-                        ))}
-                  </select>
-                  {errors.city && <p className="mt-1 text-sm text-red-400">{errors.city.message}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2">آدرس</label>
-                  <textarea
-                    {...register('address', {
-                      required: 'آدرس الزامی است',
-                    })}
-                    placeholder="آدرس کامل"
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                  />
-                  {errors.address && <p className="mt-1 text-sm text-red-400">{errors.address.message}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm mb-2">کد پستی</label>
-                    <input
-                      {...register('postalCode', {
-                        required: 'کد پستی الزامی است',
-                        pattern: {
-                          value: /^[1-9][0-9]{9}$/,
-                          message: 'کد پستی باید ۱۰ رقم باشد و با صفر شروع نشود',
-                        },
-                        validate: {
-                          checkFirstDigit: (value?: string) => {
-                            if (!value) return 'کد پستی الزامی است';
-                            const firstDigit = parseInt(value[0]);
-                            return (firstDigit >= 1 && firstDigit <= 9) || 'رقم اول کد پستی باید بین ۱ تا ۹ باشد';
-                          },
-                          checkProvince: (value?: string) => {
-                            if (!watch('province')) return true;
-                            if (!value) return 'کد پستی الزامی است';
-                            const provinceCode = parseInt(value.substring(1, 3));
-                            const validProvinceCodes = {
-                              'آذربایجان شرقی': [51, 52, 53],
-                              'آذربایجان غربی': [54, 55, 56],
-                              'اردبیل': [57, 58],
-                              'اصفهان': [81, 82, 83, 84],
-                              'البرز': [31, 32],
-                              'ایلام': [69],
-                              'بوشهر': [75, 76],
-                              'تهران': [13, 14, 15, 16, 17, 18, 19],
-                              'چهارمحال و بختیاری': [88],
-                              'خراسان جنوبی': [97],
-                              'خراسان رضوی': [91, 92, 93, 94],
-                              'خراسان شمالی': [96],
-                              'خوزستان': [61, 62, 63, 64],
-                              'زنجان': [45, 46],
-                              'سمنان': [35, 36],
-                              'سیستان و بلوچستان': [98, 99],
-                              'فارس': [71, 72, 73, 74],
-                              'قزوین': [34],
-                              'قم': [37],
-                              'کردستان': [66, 67],
-                              'کرمان': [76, 77],
-                              'کرمانشاه': [67, 68],
-                              'کهگیلویه و بویراحمد': [79],
-                              'گلستان': [49],
-                              'گیلان': [41, 42, 43],
-                              'لرستان': [68],
-                              'مازندران': [47, 48],
-                              'مرکزی': [38, 39],
-                              'هرمزگان': [79],
-                              'همدان': [65],
-                              'یزد': [89, 90]
-                            };
-                            
-                            const province = watch('province');
-                            const validCodes = validProvinceCodes[province as keyof typeof validProvinceCodes];
-                            
-                            if (validCodes && !validCodes.includes(provinceCode)) {
-                              return 'کد پستی با استان انتخاب شده مطابقت ندارد';
-                            }
-                            return true;
-                          }
-                        }
-                      })}
-                      placeholder="1234567890"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                    />
-                    {errors.postalCode && <p className="mt-1 text-sm text-red-400">{errors.postalCode.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm mb-2">پلاک</label>
-                    <input
-                      {...register('houseNumber', {
-                        required: 'پلاک الزامی است',
-                      })}
-                      placeholder="پلاک"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                    />
-                    {errors.houseNumber && <p className="mt-1 text-sm text-red-400">{errors.houseNumber.message}</p>}
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="block text-sm mb-2">واحد پول</label>
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setValue('currency', 'IRR')}
-                  className={`w-full py-3 px-6 rounded-xl border transition ${
-                    currency === 'IRR'
-                      ? 'bg-[#b62c2c] border-[#b62c2c] text-white'
-                      : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'
-                  }`}
-                >
-                  تومان
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setValue('currency', 'USD')}
-                  className={`w-full py-3 px-6 rounded-xl border transition ${
-                    currency === 'USD'
-                      ? 'bg-[#b62c2c] border-[#b62c2c] text-white'
-                      : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'
-                  }`}
-                >
-                  دلار
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm mb-2">
-                مبلغ ({currency === 'IRR' ? 'تومان' : 'دلار'})
-              </label>
-              <Controller
-                name="amount"
-                control={control}
-                rules={{
-                  required: 'مقدار الزامی است',
-                  validate: (value) => {
-                    if (currency === 'USD') {
-                      if (versionType === 'physical') {
-                        return value >= 20 || 'حداقل مبلغ برای نسخه فیزیکی ۱۲ دلار است';
-                      } else {
-                        return value >= 12 || 'حداقل مبلغ ۱۲ دلار است';
-                      }
-                    } else if (currency === 'IRR') {
-                      if (versionType === 'physical') {
-                        return value >= 1000000 || 'حداقل مبلغ برای نسخه فیزیکی ۱,۰۰۰,۰۰۰ تومان است';
-                      } else {
-                        return value >= 420000 || 'حداقل مبلغ ۴۲۰,۰۰۰ تومان است';
-                      }
-                    }
-                    return true;
-                  },
-                }}
-                render={({ field }) => (
-                  <>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={amountDisplay}
-                      onChange={(e) => {
-                        let inputValue = e.target.value;
-                        
-                        const rawValue = inputValue.replace(/[,،٬]/g, '');
-                        const latinValue = persianToLatinDigits(rawValue);
-                        
-                        if (latinValue === '' || /^\d+$/.test(latinValue)) {
-                          if (latinValue === '') {
-                            setAmountDisplay('');
-                            setFinalAmountDisplay('');
-                            field.onChange('');
-                          } else {
-                            const numericValue = Number(latinValue);
-                            field.onChange(numericValue);
-                            
-                            try {
-                              const persianValue = Number(latinValue).toLocaleString('fa-IR');
-                              setAmountDisplay(persianValue);
-                              updateFinalAmount(numericValue);
-                            } catch (error) {
-                              const withCommas = latinValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                              const persianWithCommas = latinToPersianDigits(withCommas);
-                              setAmountDisplay(persianWithCommas);
-                              updateFinalAmount(numericValue);
-                            }
-                          }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        const rawValue = e.target.value.replace(/[,،٬]/g, '');
-                        const latinValue = persianToLatinDigits(rawValue);
-                        
-                        if (latinValue === '') {
-                          setAmountDisplay('');
-                          setFinalAmountDisplay('');
-                          field.onChange('');
-                        } else {
-                          const numericValue = Number(latinValue);
-                          field.onChange(numericValue);
-                          
-                          try {
-                            const persianValue = Number(latinValue).toLocaleString('fa-IR');
-                            setAmountDisplay(persianValue);
-                            updateFinalAmount(numericValue);
-                          } catch (error) {
-                            const withCommas = latinValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                            const persianWithCommas = latinToPersianDigits(withCommas);
-                            setAmountDisplay(persianWithCommas);
-                            updateFinalAmount(numericValue);
-                          }
-                        }
-                      }}
-                      placeholder={versionType === 'physical' ? 'حداقل ۱,۰۰۰,۰۰۰ تومان' : 'حداقل ۴۲۰,۰۰۰ تومان'}
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                    />
-                    <div className="mt-2 text-sm text-neutral-400">
-                      مبلغ نهایی با احتساب مالیات: {finalAmountDisplay} {currency === 'IRR' ? 'تومان' : 'دلار'}
-                    </div>
-                  </>
+                {errors.province && (
+                  <p className="mt-2 text-sm text-red-400">{errors.province.message}</p>
                 )}
-              />
-              {errors.amount && <p className="mt-1 text-sm text-red-400">{errors.amount.message}</p>}
-            </div>
-
-            {currency === 'USD' && (
-              <div>
-                <label className="block text-sm mb-2">روش پرداخت</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col items-center">
-                    <button
-                      type="button"
-                      onClick={() => setValue('paymentMethod', 'crypto')}
-                      className={`w-full h-[80px] bg-white p-3 rounded-xl transition flex items-center justify-center ${
-                        watch('paymentMethod') === 'crypto'
-                          ? 'ring-2 ring-red-300'
-                          : 'opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <Image
-                        src="/images/payments/crypto.jpg"
-                        alt="Crypto"
-                        width={120}
-                        height={120}
-                        className="object-contain"
-                      />
-                    </button>
-                    <span className="mt-2 text-sm text-white">Crypto</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <button
-                      type="button"
-                      onClick={() => setValue('paymentMethod', 'paypal')}
-                      className={`w-full h-[80px] bg-white p-3 rounded-xl transition flex items-center justify-center ${
-                        watch('paymentMethod') === 'paypal'
-                          ? 'ring-2 ring-red-300'
-                          : 'opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <Image
-                        src="/images/payments/paypal.png"
-                        alt="PayPal"
-                        width={120}
-                        height={120}
-                        className="object-contain"
-                      />
-                    </button>
-                    <span className="mt-2 text-sm text-white">PayPal</span>
-                  </div>
                 </div>
-              </div>
+
+                <div>
+                <label className="block text-base mb-3">شهر</label>
+                  <select
+                  id="city"
+                  {...register('city', { required: 'لطفا شهر را انتخاب کنید' })}
+                  disabled={!selectedProvince}
+                  className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">انتخاب شهر</option>
+                  {selectedProvince && cities[selectedProvince]?.map((city: City) => (
+                    <option key={city.id} value={city.name}>
+                      {city.name}
+                          </option>
+                        ))}
+                  </select>
+                {errors.city && (
+                  <p className="mt-2 text-sm text-red-400">{errors.city.message}</p>
+                )}
+                </div>
+
+                <div>
+                <label className="block text-base mb-3">آدرس</label>
+                  <textarea
+                    {...register('address', {
+                      required: 'آدرس الزامی است',
+                    })}
+                    placeholder="آدرس کامل"
+                  className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
+                  />
+                {errors.address && <p className="mt-2 text-sm text-red-400">{errors.address.message}</p>}
+                </div>
+
+                  <div>
+                <label className="block text-base mb-3">کد پستی</label>
+                    <input
+                      {...register('postalCode', {
+                        required: 'کد پستی الزامی است',
+                        pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: 'کد پستی باید ۱۰ رقم باشد',
+                    },
+                    validate: (value) => {
+                      if (!value) return true;
+                      if (!validatePostalCode(value)) {
+                              return 'کد پستی با استان انتخاب شده مطابقت ندارد';
+                            }
+                            return true;
+                        }
+                      })}
+                  placeholder="۱۲۳۴۵۶۷۸۹۰"
+                  className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
+                    />
+                {errors.postalCode && <p className="mt-2 text-sm text-red-400">{errors.postalCode.message}</p>}
+                  </div>
+
+                  <div>
+                <label className="block text-base mb-3">پلاک</label>
+                    <input
+                  {...register('plate')}
+                      placeholder="پلاک"
+                  className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
+                    />
+                {errors.plate && <p className="mt-2 text-sm text-red-400">{errors.plate.message}</p>}
+                </div>
+              </>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 px-6 rounded-xl bg-[#b62c2c] hover:bg-red-600 text-white font-bold transition duration-200 font-iranyekan text-lg flex items-center justify-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  در حال پردازش...
-                </>
-              ) : (
-                ' پرداخت'
-              )}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-6">
             <div>
-              <label className="block text-sm mb-2">اسم به انگلیسی</label>
-              <input
-                {...register('name', {
-                  required: 'وارد کردن نام الزامی است',
-                  minLength: { value: 2, message: 'نام باید حداقل ۲ کاراکتر باشد' },
-                  pattern: {
-                    value: /^[A-Za-z\s]+$/,
-                    message: 'فقط حروف انگلیسی وارد کنید',
-                  },
-                })}
-                placeholder="Your Name or Nickname"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm mb-2">آیدی اینستاگرام</label>
-              <input
-                {...register('instagram', {
-                  required: 'آیدی اینستاگرام الزامی است',
-                  pattern: {
-                    value: /^[a-zA-Z0-9._]+$/,
-                    message: 'آیدی نباید با @ شروع شود و فقط شامل حروف، عدد، نقطه یا _ باشد',
-                  },
-                  validate: (value) =>
-                    value.startsWith('@') ? 'لطفاً آیدی را بدون @ وارد کنید' : true,
-                })}
-                placeholder="Your Instagram ID"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-              />
-              {errors.instagram && <p className="mt-1 text-sm text-red-400">{errors.instagram.message}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm mb-2">ایمیل</label>
+            <label className="block text-base mb-3">ایمیل</label>
               <input
                 {...register('email', {
                   required: 'ایمیل الزامی است',
@@ -739,197 +400,39 @@ const PurchaseForm: React.FC = () => {
                 })}
                 type="email"
                 placeholder="example@email.com"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-              />
-              {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>}
-            </div>
+              className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
+            />
+            {errors.email && <p className="mt-2 text-sm text-red-400">{errors.email.message}</p>}
+                </div>
 
-            {versionType === 'physical' && (
-              <>
                 <div>
-                  <label className="block text-sm mb-2">اسم به فارسی</label>
+            <label className="block text-base mb-3">آیدی اینستاگرام</label>
                   <input
-                    {...register('persianName', {
-                      required: 'وارد کردن نام به فارسی الزامی است',
-                      minLength: { value: 2, message: 'نام باید حداقل ۲ کاراکتر باشد' },
+              {...register('instagram', {
+                required: 'آیدی اینستاگرام الزامی است',
                       pattern: {
-                        value: /^[\u0600-\u06FF\s]+$/,
-                        message: 'فقط حروف فارسی وارد کنید',
+                  value: /^[A-Za-z0-9._]+$/,
+                  message: 'لطفاً آیدی را بدون @ وارد کنید',
                       },
+                validate: (value) => 
+                  value.startsWith('@') ? 'لطفاً آیدی را بدون @ وارد کنید' : true,
                     })}
-                    placeholder="نام شما به فارسی"
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
+              placeholder="Your Instagram ID"
+              className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
                   />
-                  {errors.persianName && <p className="mt-1 text-sm text-red-400">{errors.persianName.message}</p>}
+            {errors.instagram && <p className="mt-2 text-sm text-red-400">{errors.instagram.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">شماره تلفن</label>
-                  <input
-                    {...register('phone', {
-                      required: 'شماره تلفن الزامی است',
-                      pattern: {
-                        value: /^[0-9]{11}$/,
-                        message: 'شماره تلفن باید ۱۱ رقم باشد',
-                      },
-                    })}
-                    placeholder="09123456789"
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                  />
-                  {errors.phone && <p className="mt-1 text-sm text-red-400">{errors.phone.message}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2">استان</label>
-                  <select
-                    {...register('province', {
-                      required: 'انتخاب استان الزامی است',
-                    })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 font-iranyekan"
-                    onChange={(e) => {
-                      setValue('province', e.target.value);
-                      setValue('city', ''); // Reset city when province changes
-                    }}
-                  >
-                    <option value="">انتخاب استان</option>
-                    {(iranCities as IranCities).provinces.map((province: Province) => (
-                      <option key={province.id} value={province.name}>
-                        {province.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.province && <p className="mt-1 text-sm text-red-400">{errors.province.message}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2">شهر</label>
-                  <select
-                    {...register('city', {
-                      required: 'انتخاب شهر الزامی است',
-                    })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 font-iranyekan"
-                    disabled={!watch('province')}
-                  >
-                    <option value="">انتخاب شهر</option>
-                    {watch('province') &&
-                      (iranCities as IranCities).provinces
-                        .find((p: Province) => p.name === watch('province'))
-                        ?.cities.map((city: string) => (
-                          <option key={city} value={city}>
-                            {city}
-                          </option>
-                        ))}
-                  </select>
-                  {errors.city && <p className="mt-1 text-sm text-red-400">{errors.city.message}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2">آدرس</label>
-                  <textarea
-                    {...register('address', {
-                      required: 'آدرس الزامی است',
-                    })}
-                    placeholder="آدرس کامل"
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                  />
-                  {errors.address && <p className="mt-1 text-sm text-red-400">{errors.address.message}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm mb-2">کد پستی</label>
-                    <input
-                      {...register('postalCode', {
-                        required: 'کد پستی الزامی است',
-                        pattern: {
-                          value: /^[1-9][0-9]{9}$/,
-                          message: 'کد پستی باید ۱۰ رقم باشد و با صفر شروع نشود',
-                        },
-                        validate: {
-                          checkFirstDigit: (value?: string) => {
-                            if (!value) return 'کد پستی الزامی است';
-                            const firstDigit = parseInt(value[0]);
-                            return (firstDigit >= 1 && firstDigit <= 9) || 'رقم اول کد پستی باید بین ۱ تا ۹ باشد';
-                          },
-                          checkProvince: (value?: string) => {
-                            if (!watch('province')) return true;
-                            if (!value) return 'کد پستی الزامی است';
-                            const provinceCode = parseInt(value.substring(1, 3));
-                            const validProvinceCodes = {
-                              'آذربایجان شرقی': [51, 52, 53],
-                              'آذربایجان غربی': [54, 55, 56],
-                              'اردبیل': [57, 58],
-                              'اصفهان': [81, 82, 83, 84],
-                              'البرز': [31, 32],
-                              'ایلام': [69],
-                              'بوشهر': [75, 76],
-                              'تهران': [13, 14, 15, 16, 17, 18, 19],
-                              'چهارمحال و بختیاری': [88],
-                              'خراسان جنوبی': [97],
-                              'خراسان رضوی': [91, 92, 93, 94],
-                              'خراسان شمالی': [96],
-                              'خوزستان': [61, 62, 63, 64],
-                              'زنجان': [45, 46],
-                              'سمنان': [35, 36],
-                              'سیستان و بلوچستان': [98, 99],
-                              'فارس': [71, 72, 73, 74],
-                              'قزوین': [34],
-                              'قم': [37],
-                              'کردستان': [66, 67],
-                              'کرمان': [76, 77],
-                              'کرمانشاه': [67, 68],
-                              'کهگیلویه و بویراحمد': [79],
-                              'گلستان': [49],
-                              'گیلان': [41, 42, 43],
-                              'لرستان': [68],
-                              'مازندران': [47, 48],
-                              'مرکزی': [38, 39],
-                              'هرمزگان': [79],
-                              'همدان': [65],
-                              'یزد': [89, 90]
-                            };
-                            
-                            const province = watch('province');
-                            const validCodes = validProvinceCodes[province as keyof typeof validProvinceCodes];
-                            
-                            if (validCodes && !validCodes.includes(provinceCode)) {
-                              return 'کد پستی با استان انتخاب شده مطابقت ندارد';
-                            }
-                            return true;
-                          }
-                        }
-                      })}
-                      placeholder="1234567890"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                    />
-                    {errors.postalCode && <p className="mt-1 text-sm text-red-400">{errors.postalCode.message}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm mb-2">پلاک</label>
-                    <input
-                      {...register('houseNumber', {
-                        required: 'پلاک الزامی است',
-                      })}
-                      placeholder="پلاک"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
-                    />
-                    {errors.houseNumber && <p className="mt-1 text-sm text-red-400">{errors.houseNumber.message}</p>}
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="block text-sm mb-2">واحد پول</label>
+            <label className="block text-base mb-3">واحد پول</label>
               <div className="flex gap-4">
                 <button
                   type="button"
                   onClick={() => setValue('currency', 'IRR')}
-                  className={`w-full py-3 px-6 rounded-xl border transition ${
+                className={`w-full py-4 px-6 text-base rounded-xl border transition ${
                     currency === 'IRR'
-                      ? 'bg-[#b62c2c] border-[#b62c2c] text-white'
-                      : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'
+                    ? 'bg-[#8B0000] border-[#8B0000] text-white'
+                    : 'bg-neutral-800 border-neutral-700 text-neutral-100 hover:bg-neutral-700'
                   }`}
                 >
                   تومان
@@ -937,10 +440,10 @@ const PurchaseForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setValue('currency', 'USD')}
-                  className={`w-full py-3 px-6 rounded-xl border transition ${
+                className={`w-full py-4 px-6 text-base rounded-xl border transition ${
                     currency === 'USD'
-                      ? 'bg-[#b62c2c] border-[#b62c2c] text-white'
-                      : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700'
+                    ? 'bg-[#8B0000] border-[#8B0000] text-white'
+                    : 'bg-neutral-800 border-neutral-700 text-neutral-100 hover:bg-neutral-700'
                   }`}
                 >
                   دلار
@@ -949,7 +452,7 @@ const PurchaseForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm mb-2">
+            <label className="block text-base mb-3">
                 مبلغ ({currency === 'IRR' ? 'تومان' : 'دلار'})
               </label>
               <Controller
@@ -959,13 +462,17 @@ const PurchaseForm: React.FC = () => {
                   required: 'مقدار الزامی است',
                   validate: (value) => {
                     if (currency === 'USD') {
+                    if (selectedVersion === 'digital') {
                       return value >= 12 || 'حداقل مبلغ ۱۲ دلار است';
+                    } else {
+                      return value >= 20 || 'حداقل مبلغ ۲۰ دلار است';
+                    }
                     } else if (currency === 'IRR') {
-                      if (versionType === 'physical') {
-                        return value >= 1000000 || 'حداقل مبلغ برای نسخه فیزیکی ۱,۰۰۰,۰۰۰ تومان است';
+                    if (selectedVersion === 'digital') {
+                      return value >= 420000 || 'حداقل مبلغ ۴۲۰,۰۰۰ تومان است';
                       } else {
-                        return value >= 420000 || 'حداقل مبلغ ۴۲۰,۰۰۰ تومان است';
-                      }
+                      return value >= 1000000 || 'حداقل مبلغ ۱,۰۰۰,۰۰۰ تومان است';
+                    }
                     }
                     return true;
                   },
@@ -973,34 +480,25 @@ const PurchaseForm: React.FC = () => {
                 render={({ field }) => (
                   <>
                     <input
+                    {...field}
                       type="text"
-                      inputMode="numeric"
                       value={amountDisplay}
                       onChange={(e) => {
-                        let inputValue = e.target.value;
-                        
-                        const rawValue = inputValue.replace(/[,،٬]/g, '');
+                      const rawValue = e.target.value.replace(/[,،٬]/g, '');
                         const latinValue = persianToLatinDigits(rawValue);
-                        
-                        if (latinValue === '' || /^\d+$/.test(latinValue)) {
-                          if (latinValue === '') {
-                            setAmountDisplay('');
-                            setFinalAmountDisplay('');
-                            field.onChange('');
-                          } else {
-                            const numericValue = Number(latinValue);
+                      const numericValue = Number(latinValue);
+                      
+                      if (!isNaN(numericValue)) {
                             field.onChange(numericValue);
-                            
                             try {
-                              const persianValue = Number(latinValue).toLocaleString('fa-IR');
+                          const persianValue = numericValue.toLocaleString('fa-IR');
                               setAmountDisplay(persianValue);
                               updateFinalAmount(numericValue);
-                            } catch (error) {
+                        } catch {
                               const withCommas = latinValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                               const persianWithCommas = latinToPersianDigits(withCommas);
                               setAmountDisplay(persianWithCommas);
                               updateFinalAmount(numericValue);
-                            }
                           }
                         }
                       }}
@@ -1009,46 +507,66 @@ const PurchaseForm: React.FC = () => {
                         const latinValue = persianToLatinDigits(rawValue);
                         
                         if (latinValue === '') {
-                          setAmountDisplay('');
-                          setFinalAmountDisplay('');
-                          field.onChange('');
+                        if (currency === 'IRR') {
+                          setAmountDisplay((1000000).toLocaleString('fa-IR'));
+                          setFinalAmountDisplay((1000000 * 1.14).toLocaleString('fa-IR'));
+                          field.onChange(1000000);
+                        } else if (currency === 'USD') {
+                          setAmountDisplay((10).toLocaleString('fa-IR'));
+                          setFinalAmountDisplay((10 * 1.07).toLocaleString('fa-IR'));
+                          field.onChange(10);
+                        }
+                      } else {
+                        const numericValue = Number(latinValue);
+                        if (currency === 'IRR' && numericValue < 1000000) {
+                          setAmountDisplay((1000000).toLocaleString('fa-IR'));
+                          setFinalAmountDisplay((1000000 * 1.14).toLocaleString('fa-IR'));
+                          field.onChange(1000000);
+                        } else if (currency === 'USD' && numericValue < 10) {
+                          setAmountDisplay((10).toLocaleString('fa-IR'));
+                          setFinalAmountDisplay((10 * 1.07).toLocaleString('fa-IR'));
+                          field.onChange(10);
                         } else {
-                          const numericValue = Number(latinValue);
                           field.onChange(numericValue);
-                          
                           try {
-                            const persianValue = Number(latinValue).toLocaleString('fa-IR');
+                            const persianValue = numericValue.toLocaleString('fa-IR');
                             setAmountDisplay(persianValue);
                             updateFinalAmount(numericValue);
-                          } catch (error) {
+                          } catch {
                             const withCommas = latinValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                             const persianWithCommas = latinToPersianDigits(withCommas);
                             setAmountDisplay(persianWithCommas);
                             updateFinalAmount(numericValue);
                           }
+                          }
                         }
                       }}
-                      placeholder={versionType === 'physical' ? 'حداقل ۱,۰۰۰,۰۰۰ تومان' : 'حداقل ۴۲۰,۰۰۰ تومان'}
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-800 text-white border border-neutral-700 focus:ring-2 focus:ring-green-500 placeholder-neutral-400 font-iranyekan"
+                    placeholder={currency === 'IRR' ? "حداقل ۱,۰۰۰,۰۰۰ تومان" : "حداقل ۱۰ دلار"}
+                    className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
                     />
-                    <div className="mt-2 text-sm text-neutral-400">
-                      مبلغ نهایی با احتساب مالیات: {finalAmountDisplay} {currency === 'IRR' ? 'تومان' : 'دلار'}
+                  {currency === 'IRR' && (
+                    <div className="mt-3 text-base text-neutral-400">
+                      نمایش در سایت: {Math.round(amount / 83000)} دلار
                     </div>
+                  )}
+                  <div className="mt-3 text-base text-neutral-400">
+                    مبلغ نهایی با احتساب مالیات: {finalAmountDisplay} {currency === 'IRR' ? 'تومان' : 'دلار'}
+                  </div>
+                  {errors.amount && <p className="mt-2 text-sm text-red-400">{errors.amount.message}</p>}
                   </>
                 )}
               />
-              {errors.amount && <p className="mt-1 text-sm text-red-400">{errors.amount.message}</p>}
             </div>
 
             {currency === 'USD' && (
               <div>
-                <label className="block text-sm mb-2">روش پرداخت</label>
-                <div className="grid grid-cols-2 gap-3">
+              <label className="block text-base mb-3">روش پرداخت</label>
+              <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col items-center">
                     <button
                       type="button"
                       onClick={() => setValue('paymentMethod', 'crypto')}
-                      className={`w-full h-[80px] bg-white p-3 rounded-xl transition flex items-center justify-center ${
+                    className={`w-full h-[100px] bg-white p-3 rounded-xl transition flex items-center justify-center ${
                         watch('paymentMethod') === 'crypto'
                           ? 'ring-2 ring-red-300'
                           : 'opacity-70 hover:opacity-100'
@@ -1062,13 +580,13 @@ const PurchaseForm: React.FC = () => {
                         className="object-contain"
                       />
                     </button>
-                    <span className="mt-2 text-sm text-white">Crypto</span>
+                  <span className="mt-2 text-base text-neutral-100">Crypto</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <button
                       type="button"
                       onClick={() => setValue('paymentMethod', 'paypal')}
-                      className={`w-full h-[80px] bg-white p-3 rounded-xl transition flex items-center justify-center ${
+                    className={`w-full h-[100px] bg-white p-3 rounded-xl transition flex items-center justify-center ${
                         watch('paymentMethod') === 'paypal'
                           ? 'ring-2 ring-red-300'
                           : 'opacity-70 hover:opacity-100'
@@ -1082,50 +600,27 @@ const PurchaseForm: React.FC = () => {
                         className="object-contain"
                       />
                     </button>
-                    <span className="mt-2 text-sm text-white">PayPal</span>
-                  </div>
+                  <span className="mt-2 text-base text-neutral-100">PayPal</span>
+                </div>
                 </div>
               </div>
             )}
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full py-4 px-6 rounded-xl bg-[#b62c2c] hover:bg-red-600 text-white font-bold transition duration-200 font-iranyekan text-lg flex items-center justify-center gap-2"
+            className="w-full py-4 px-6 text-base bg-[#8B0000] text-white rounded-xl hover:bg-[#8B0000] transition-colors duration-300 font-iranyekan"
             >
               {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+              <div className="flex items-center justify-center font-iranyekan">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
                   در حال پردازش...
-                </>
+              </div>
               ) : (
-                ' پرداخت'
+              'ادامه'
               )}
             </button>
           </div>
-        )}
       </form>
-
-      {showVerification && (
-        <EmailVerificationPopup
-          onClose={() => setShowVerification(false)}
-          onVerify={handleVerify}
-          onResendCode={async () => {
-            try {
-              await fetch('/api/verify-email', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: watch('email') }),
-              });
-            } catch (error) {
-              console.error('Error resending code:', error);
-            }
-          }}
-          email={watch('email')}
-        />
-      )}
     </>
   );
 };

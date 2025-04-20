@@ -1,67 +1,50 @@
 // src/app/layout.tsx
 import '../app/globals.css'
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import localFont from 'next/font/local';
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://gheddis.vinak.com'),
-  title: "GHEDDIS Album | VINAK Official",
-  description: "پیش‌فروش انحصاری آلبوم GHEDDIS از VINAK. دسترسی به آلبوم قبل از انتشار رسمی و پشتیبانی از روش‌های پرداخت بین‌المللی.",
-  keywords: ["GHEDDIS", "VINAK", "آلبوم موسیقی", "پیش‌فروش انحصاری", "موسیقی ایرانی", "آلبوم جدید"],
-  authors: [{ name: "VINAK" }],
-  openGraph: {
-    title: "GHEDDIS Album | VINAK Official",
-    description: "پیش‌فروش انحصاری آلبوم GHEDDIS از VINAK. دسترسی به آلبوم قبل از انتشار رسمی.",
-    type: "website",
-    locale: "fa_IR",
-    siteName: "GHEDDIS Album",
-    images: [
-      {
-        url: "/album-cover.png",
-        width: 1200,
-        height: 630,
-        alt: "GHEDDIS Album Artwork",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "GHEDDIS Album | VINAK Official",
-    description: "پیش‌فروش انحصاری آلبوم GHEDDIS از VINAK. دسترسی به آلبوم قبل از انتشار رسمی.",
-    images: ["/album-cover.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
+const sfProRounded = localFont({
+  src: [
+    {
+      path: '../../public/fonts/sf-pro-rounded-regular.otf',
+      weight: '400',
+      style: 'normal',
     },
-  },
-};
+    {
+      path: '../../public/fonts/sf-pro-rounded-medium.otf',
+      weight: '500',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-sf-pro-rounded',
+});
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  themeColor: "#b62c2c",
+export const metadata: Metadata = {
+  title: "AK-47 Album Pre-sale",
+  description: "Pre-sale page for AK-47 album by ARTA x KOOROSH",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="fa" dir="rtl">
-      <body className={inter.className}>
-        <Header />
-        <main>{children}</main>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
+      <body className={`${inter.className} ${sfProRounded.variable}`}>
+        {children}
         <Footer />
       </body>
     </html>

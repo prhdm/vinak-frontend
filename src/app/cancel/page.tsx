@@ -21,7 +21,7 @@ const FailedPage = () => {
 
         <Link
           href="/"
-          className="block w-full py-4 px-6 rounded-xl bg-[#b62c2c] hover:bg-red-600 text-white font-bold transition duration-200 font-iranyekan text-lg"
+          className="block w-full py-4 px-6 rounded-xl bg-[#8B0000] hover:bg-[#8B0000] text-white font-bold transition duration-200 font-iranyekan text-lg"
         >
           بازگشت به صفحه اصلی
         </Link>

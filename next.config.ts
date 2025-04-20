@@ -1,11 +1,10 @@
-import withPWA from 'next-pwa';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'vinak.net'],
+    domains: ['localhost'],
     formats: ['image/avif', 'image/webp'] as const,
   },
   experimental: {
@@ -15,52 +14,23 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'X-Forwarded-Proto',
-            value: 'https',
-          },
-          {
-            key: 'X-Forwarded-Host',
-            value: process.env.NEXT_PUBLIC_HOST || 'localhost',
-          },
-          {
-            key: 'Access-Control-Allow-Credentials',
-            value: 'true',
-          },
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: 'https://vinak.net',
-          },
-          {
-            key: 'Access-Control-Allow-Methods',
-            value: 'GET,DELETE,PATCH,POST,PUT',
-          },
-          {
-            key: 'Access-Control-Allow-Headers',
-            value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization',
-          },
-        ],
+  webpack: (config, { isServer }) => {
+    // Disable caching for development
+    if (process.env.NODE_ENV === 'development') {
+      config.cache = false;
+    }
+    
+    // Improve module resolution
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        ...config.resolve?.fallback,
+        fs: false,
+        path: false,
       },
-    ];
-  },
-  trustProxy: true,
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-  assetPrefix: process.env.NEXT_PUBLIC_ASSET_PREFIX || '',
-  distDir: '.next',
-  trailingSlash: false,
-  poweredByHeader: false,
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: '/api/:path*',
-      },
-    ];
+    };
+
+    return config;
   },
 };
 
@@ -68,11 +38,4 @@ const withBundleAnalyzerConfig = withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
-const withPWAConfig = withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-});
-
-export default withBundleAnalyzerConfig(withPWAConfig(nextConfig));
+export default withBundleAnalyzerConfig(nextConfig);

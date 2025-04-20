@@ -1,69 +1,78 @@
+"use client";
 import React from 'react';
 import Image from 'next/image';
-import { FaInstagram, FaYoutube, FaSpotify, FaSoundcloud, FaTelegram, FaApple } from 'react-icons/fa';
-import { SiApplemusic } from "react-icons/si";
+import Link from 'next/link';
+import { FaSpotify, FaYoutube, FaInstagram, FaTelegram } from 'react-icons/fa';
+import { SiSoundcloud, SiApplemusic } from 'react-icons/si';
 
 const Header: React.FC = () => {
   return (
-    <header className="mb-4 mt-4 w-full bg-transparent text-white font-iranyekan py-4 px-4 sm:px-8 lg:px-16 xl:px-32">
-      <div className="w-full max-w-[1270px] mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-4 text-2xl">
-          <a
-            href="https://t.me/VinakOfficial1"
+    <header className="z-50 bg-[#4B0000] py-6">
+      <div className="container mx-auto px-4 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <a 
+            href="https://t.me/VinakOfficial1" 
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-300 transition"
+            className="text-white/80 hover:text-white transition-colors duration-300"
+            title="Telegram"
           >
-            <FaTelegram />
+            <FaTelegram className="text-2xl" />
           </a>
-          <a
-            href="https://instagram.com/vinakofficial"
+          <a 
+            href="https://www.instagram.com/vinakofficial" 
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-300 transition"
+            className="text-white/80 hover:text-white transition-colors duration-300"
+            title="Instagram"
           >
-            <FaInstagram />
+            <FaInstagram className="text-2xl" />
           </a>
-          <a
-            href="https://www.youtube.com/channel/UCmlJROQjTSiaa32jCRhcjVw"
+          <a 
+            href="https://www.youtube.com/channel/UCmlJROQjTSiaa32jCRhcjVw" 
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-300 transition"
+            className="text-white/80 hover:text-white transition-colors duration-300"
+            title="YouTube"
           >
-            <FaYoutube />
+            <FaYoutube className="text-2xl" />
           </a>
-          <a
-            href="https://open.spotify.com/artist/1sKlyO3CCEvjeTN6Uck39S"
+          <a 
+            href="https://soundcloud.com/elvinako" 
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-300 transition"
+            className="text-white/80 hover:text-white transition-colors duration-300"
+            title="SoundCloud"
           >
-            <FaSpotify />
+            <SiSoundcloud className="text-2xl" />
           </a>
-          <a
-            href="https://soundcloud.com/elvinako"
+          <a 
+            href="https://open.spotify.com/artist/1sKlyO3CCEvjeTN6Uck39S" 
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-300 transition"
+            className="text-white/80 hover:text-white transition-colors duration-300"
+            title="Spotify"
           >
-            <FaSoundcloud />
+            <FaSpotify className="text-2xl" />
           </a>
-          <a
-            href="https://music.apple.com/us/artist/vinak/1047024582"
+          <a 
+            href="https://music.apple.com/us/artist/vinak/1047024582" 
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-300 transition"
+            className="text-white/80 hover:text-white transition-colors duration-300"
+            title="Apple Music"
           >
-            <SiApplemusic />
+            <SiApplemusic className="text-2xl" />
           </a>
         </div>
 
         <div className="flex items-center">
           <Image
             src="/belaad.png"
-            alt="Logo"
-            width={130}
-            height={80}
+            alt="Belaad Logo"
+            width={120}
+            height={40}
+            className="object-contain"
           />
         </div>
       </div>
@@ -71,4 +80,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default Header; 

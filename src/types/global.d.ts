@@ -1,5 +1,5 @@
 declare global {
-  var verificationCodes: {
+  let verificationCodes: {
     [email: string]: string;
   };
 }
