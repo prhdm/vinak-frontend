@@ -7,6 +7,14 @@ import { CheckCircle } from 'lucide-react';
 const SuccessPage = () => {
   const searchParams = useSearchParams();
   const orderCode = searchParams.get('orderCode');
+  const amount = searchParams.get('amount');
+  const currency = searchParams.get('currency');
+
+  const formatAmount = () => {
+    if (!amount) return '';
+    if (currency === 'USD') return `$${amount}`;
+    return `${amount} تومان`;
+  };
 
   return (
     <div className="h-[calc(100vh-200px)] flex items-center justify-center p-4">
@@ -30,6 +38,13 @@ const SuccessPage = () => {
           </div>
         )}
 
+        {amount && (
+          <div className="bg-neutral-800 p-4 rounded-xl mb-6">
+            <p className="text-neutral-300 font-iranyekan">مبلغ پرداختی:</p>
+            <p className="text-white font-bold text-xl font-iranyekan">{formatAmount()}</p>
+          </div>
+        )}
+        
         <Link
           href="/"
           className="block w-full py-4 px-6 rounded-xl bg-[#8B0000] hover:bg-[#8B0000] text-white font-bold transition duration-200 font-iranyekan text-lg"
