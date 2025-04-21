@@ -12,7 +12,7 @@ const SuccessPage = () => {
 
   const formatAmount = () => {
     if (!amount) return '';
-    if (currency === 'USD') return `$${amount}`;
+    if (currency === 'usd') return `$${amount}`;
     return `${amount} تومان`;
   };
 
