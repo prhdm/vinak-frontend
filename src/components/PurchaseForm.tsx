@@ -252,11 +252,7 @@ const PurchaseForm: React.FC = () => {
                 <label className="block text-base mb-3">شماره تلفن</label>
                   <input
                     {...register('phone', {
-                      required: 'شماره تلفن الزامی است',
-                      pattern: {
-                        value: /^[0-9]{11}$/,
-                        message: 'شماره تلفن باید ۱۱ رقم باشد',
-                      },
+                      required: 'شماره تلفن الزامی است'
                     })}
                   placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                   className="w-full px-4 py-4 text-base min-[16px] rounded-lg bg-neutral-800 text-neutral-100 border border-neutral-700 focus:ring-2 focus:ring-[#8B0000] focus:border-[#8B0000] focus:outline-none placeholder-neutral-500 font-iranyekan"
