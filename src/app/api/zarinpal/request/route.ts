@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     if (data.data?.code === 100 && data.data?.authority) {
       const authorityId = data.data.authority;
       
-      const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/v1/payment/prepare`, {
+      const prepareResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/payment/prepare`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
